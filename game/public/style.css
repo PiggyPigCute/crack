@@ -292,9 +292,17 @@ button:disabled {
 }
 
 .card.suit-club {
-    color: #565656;
+    color: #7b7b7b;
 }
 
 .card.joker {
     color: var(--gold);
+}
+
+.card.joker .card-value {
+    font-size: 38px;
+    background: linear-gradient(135deg, #ff3b3b, #ff9d1f, #ffe14d, #4ade80, #38bdf8, #a78bfa);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
 }
