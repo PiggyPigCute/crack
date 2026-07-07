@@ -69,7 +69,7 @@ io.on('connection', (socket) => {
       role = -1 // specatateur
     } else {
       role = game.players.length;
-      players.push({
+      game.players.push({
         name: "Joueur·euse " + role
       })
     }
