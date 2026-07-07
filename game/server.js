@@ -64,7 +64,7 @@ function spreadState() {
 io.on('connection', (socket) => {
   // --- Attribution du rôle à la connexion ---
   let role;
-  if (disconnectedPlayers.length == 0) {
+  if (game.disconnectedPlayers.length == 0) {
     if (game.inGame) {
       role = -1 // specatateur
     } else {
@@ -74,7 +74,7 @@ io.on('connection', (socket) => {
       })
     }
   } else {
-    role = disconnectedPlayers.pop()
+    role = game.disconnectedPlayers.pop()
   }
   
   roles.set(socket.id, role);
