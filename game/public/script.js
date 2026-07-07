@@ -34,7 +34,7 @@ function renderHands(hands, tokens) {
 
     const token = tokens.slots[myRole][handIndex];
     if (token != null) {
-      slotEl.appendChild(createTokenEl(token));
+      slotEl.appendChild(getTokenEl(token));
     }
     groupDiv.appendChild(slotEl);
 
@@ -74,15 +74,47 @@ function renderHands(hands, tokens) {
   });
 }
 
-function createTokenEl(token) {
-  const tokenEl = document.createElement('div');
-  tokenEl.className = 'token';
-  tokenEl.textContent = token;
-  tokenEl.draggable = true;
-  tokenEl.ondragstart = (e) => {
-    e.dataTransfer.setData('text/plain', token);
-  };
+const tokenEls = new Map(); // token id -> persistent DOM element, so moves can be animated instead of recreated
+
+function getTokenEl(token) {
+  let tokenEl = tokenEls.get(token);
+  if (!tokenEl) {
+    tokenEl = document.createElement('div');
+    tokenEl.className = 'token';
+    tokenEl.textContent = token;
+    tokenEl.draggable = true;
+    tokenEl.ondragstart = (e) => {
+      e.dataTransfer.setData('text/plain', token);
+    };
+    tokenEls.set(token, tokenEl);
+  }
   return tokenEl;
+}
+
+// FLIP animation: snapshot token positions, run the render, then animate from old to new position
+function animateTokens(renderTokens) {
+  const oldRects = new Map();
+  tokenEls.forEach((tokenEl, token) => {
+    if (tokenEl.isConnected) oldRects.set(token, tokenEl.getBoundingClientRect());
+  });
+
+  renderTokens();
+
+  tokenEls.forEach((tokenEl, token) => {
+    const oldRect = oldRects.get(token);
+    if (!oldRect || !tokenEl.isConnected) return;
+
+    const newRect = tokenEl.getBoundingClientRect();
+    const dx = oldRect.left - newRect.left;
+    const dy = oldRect.top - newRect.top;
+    if (!dx && !dy) return;
+
+    tokenEl.style.transition = 'none';
+    tokenEl.style.transform = `translate(${dx}px, ${dy}px)`;
+    tokenEl.getBoundingClientRect(); // force reflow before re-enabling the transition
+    tokenEl.style.transition = 'transform 0.25s ease';
+    tokenEl.style.transform = '';
+  });
 }
 
 function makeDropTarget(el, to) {
@@ -109,7 +141,7 @@ function renderCenterTokens(tokens) {
     slotEl.className = 'token-slot';
 
     if (tokens.center.includes(token)) {
-      slotEl.appendChild(createTokenEl(token));
+      slotEl.appendChild(getTokenEl(token));
     }
 
     els.centerTokens.appendChild(slotEl);
@@ -139,7 +171,7 @@ function renderOpponents(players, tokens) {
       makeDropTarget(slotEl, { player: playerIndex, hand });
 
       if (token != null) {
-        slotEl.appendChild(createTokenEl(token));
+        slotEl.appendChild(getTokenEl(token));
       }
 
       slotsDiv.appendChild(slotEl);
@@ -218,9 +250,11 @@ socket.on('gameState', (view) => {
     els.lobby.classList.add("hidden");
 
     if (view.tokens) {
-      if (myRole >= 0) renderHands(view.hand, view.tokens);
-      renderOpponents(view.players, view.tokens);
-      renderCenterTokens(view.tokens);
+      animateTokens(() => {
+        if (myRole >= 0) renderHands(view.hand, view.tokens);
+        renderOpponents(view.players, view.tokens);
+        renderCenterTokens(view.tokens);
+      });
     }
   } else {
     els.lobby.classList.remove("hidden");
