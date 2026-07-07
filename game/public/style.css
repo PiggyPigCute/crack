@@ -300,8 +300,9 @@ button:disabled {
 }
 
 .card.joker .card-value {
-    font-size: 38px;
-    background: linear-gradient(135deg, #ff3b3b, #ff9d1f, #ffe14d, #4ade80, #38bdf8, #a78bfa);
+    font-size: 67px;
+    line-height: 1;
+    background: conic-gradient(from 0deg, #ff3b3b, #ff9d1f, #ffe14d, #4ade80, #38bdf8, #a78bfa, #ff3b3b);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
