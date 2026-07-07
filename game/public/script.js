@@ -29,7 +29,7 @@ function renderHands(hands, tokens) {
     groupDiv.className = 'hand-group';
 
     const slotEl = document.createElement('div');
-    slotEl.className = 'token-slot';
+    slotEl.className = 'token-slot hand-token-slot';
     makeDropTarget(slotEl, { player: myRole, hand: handIndex });
 
     const token = tokens.slots[myRole][handIndex];
