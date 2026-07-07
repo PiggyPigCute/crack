@@ -31,10 +31,10 @@ function viewFor(role) {
     return {
       inGame: true,
       players: game.players,
-      hand: role == -1 ? games.hands : game.hands[role],
+      hand: role == -1 ? game.hands : game.hands[role],
       river: game.river,
-      oldTokens: game.oldTokens,
-      tokens: game.tokens
+      tokens: game.tokens,
+      settings: game.settings,
     }
   } else { // in lobby
     return {
@@ -89,6 +89,15 @@ io.on('connection', (socket) => {
     if (game.inGame) return;  // can't start a game during a game
     if (role != 0) return;    // must be admin (role 0) to start game
     
+    // tokens
+    tokenMax = game.players.length * game.settings.handsPerPlayer
+    game.token = {
+      max: tokenMax,
+      mid: new Set([...Array(tokenMax).keys()]),
+      act: Array.from({length: game.players.length}, () => Array(game.settings.handsPerPlayer).fill(-1)),
+      old: Array.from({length: game.players.length}, () => Array(game.settings.handsPerPlayer).fill([])),
+    }
+
     // construction du deck
     const deck = [];
     vs.forEach(v => {
@@ -96,7 +105,7 @@ io.on('connection', (socket) => {
         deck.push({v:v, c:c})
       })
     })
-    for (i=0; i<game.nbrJokers; i++) {
+    for (i=0; i<game.settings.nbrJokers; i++) {
       deck.push({v:joker, c:''})
     }
 
@@ -109,10 +118,19 @@ io.on('connection', (socket) => {
     // distribution
     game.hands = []
     for (i=0; i<game.players.length; i++) {
-      game.hands.push(deck.splice(0, game.cardsPerHand))
+      let persoHands = []
+      for (i=0; i<game.settings.handsPerPlayer; i++) {
+        persoHands.push(deck.splice(0, game.settings.cardsPerHand))
+      }
+      game.hands.push(persoHands)
     }
 
+    // river
+    game.river = deck.splice(0, 5)
+
+    // initialize game
     game.inGame = true
+    game.turn = 0
 
     spreadState();
   })
