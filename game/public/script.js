@@ -25,12 +25,12 @@ socket.on('gameState', (view) => {
 
   // Ma main (uniquement si je suis joueur)
   if (myRole >= 0) {
-    playersList.innerHTML = '';
+    els.playersList.innerHTML = '';
     view.players.forEach((player, role) => {
       const div = document.createElement('div');
       div.className = 'carte';
       div.textContent = player.name + ' ' + role;
-      playersList.appendChild(div);
+      els.playersList.appendChild(div);
     });
   }
 });
