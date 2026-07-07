@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Jeu de cartes - squelette</title>
+<style>
+  body { font-family: sans-serif; max-width: 700px; margin: 40px auto; }
+  h1 { font-size: 20px; }
+  #role { font-weight: bold; }
+  #tour { padding: 4px 10px; border-radius: 6px; background: #eee; display: inline-block; }
+  #tour.mon-tour { background: #cdeccd; }
+  .cartes { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
+  .carte {
+    border: 1px solid #999; border-radius: 6px; padding: 12px 16px;
+    cursor: pointer; background: white; font-size: 18px;
+  }
+  .carte:hover { background: #f0f0f0; }
+  button { padding: 8px 14px; cursor: pointer; }
+  #log { font-size: 13px; color: #555; max-height: 150px; overflow-y: auto; border-top: 1px solid #ddd; padding-top: 8px; }
+</style>
+</head>
+<body>
+
+<h1>Jeu de cartes (squelette)</h1>
+<p>Rôle : <span id="role">connexion...</span></p>
+<p>Tour actuel : <span id="tour">-</span></p>
+<p>Cartes restantes dans le deck : <span id="deck-restant">-</span></p>
+
+<div id="zone-jeu" style="display:none;">
+  <h3>Ma main</h3>
+  <div class="cartes" id="main-joueur"></div>
+  <button id="btn-piocher">Piocher une carte</button>
+
+  <h3>Défausse</h3>
+  <div class="cartes" id="defausse"></div>
+</div>
+
+<div id="zone-spectateur" style="display:none;">
+  <p>Joueur 1 : <span id="spec-j1"></span> cartes en main</p>
+  <p>Joueur 2 : <span id="spec-j2"></span> cartes en main</p>
+</div>
+
+<button id="btn-nouvelle-partie">Nouvelle partie</button>
+
+<h3>Historique</h3>
+<div id="log"></div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const socket = io();
+let monRole = null;
+
+socket.on('role', (role) => {
+  monRole = role;
+  document.getElementById('role').textContent = role;
+
+  if (role === 'spectateur') {
+    document.getElementById('zone-jeu').style.display = 'none';
+    document.getElementById('zone-spectateur').style.display = 'block';
+  } else {
+    document.getElementById('zone-jeu').style.display = 'block';
+    document.getElementById('zone-spectateur').style.display = 'none';
+  }
+});
+
+socket.on('etatJeu', (etat) => {
+  // Indicateur de tour
+  const tourEl = document.getElementById('tour');
+  tourEl.textContent = etat.tour;
+  tourEl.classList.toggle('mon-tour', etat.tour === monRole);
+
+  document.getElementById('deck-restant').textContent = etat.cartesRestantesDansLeDeck;
+
+  // Ma main (uniquement si je suis joueur)
+  if (etat.maMain) {
+    const mainEl = document.getElementById('main-joueur');
+    mainEl.innerHTML = '';
+    etat.maMain.forEach((carte) => {
+      const div = document.createElement('div');
+      div.className = 'carte';
+      div.textContent = carte;
+      div.onclick = () => socket.emit('jouerCarte', carte);
+      mainEl.appendChild(div);
+    });
+  }
+
+  // Défausse (visible par tous)
+  const defausseEl = document.getElementById('defausse');
+  defausseEl.innerHTML = '';
+  etat.defausse.forEach((carte) => {
+    const div = document.createElement('div');
+    div.className = 'carte';
+    div.textContent = carte;
+    div.style.cursor = 'default';
+    defausseEl.appendChild(div);
+  });
+
+  // Vue spectateur
+  if (monRole === 'spectateur') {
+    document.getElementById('spec-j1').textContent = etat.nbCartesJoueur1;
+    document.getElementById('spec-j2').textContent = etat.nbCartesJoueur2;
+  }
+
+  // Historique
+  const logEl = document.getElementById('log');
+  logEl.innerHTML = etat.log.map(l => `<div>${l}</div>`).join('');
+  logEl.scrollTop = logEl.scrollHeight;
+});
+
+document.getElementById('btn-piocher').onclick = () => {
+  socket.emit('piocherCarte');
+};
+
+document.getElementById('btn-nouvelle-partie').onclick = () => {
+  socket.emit('nouvellePartie');
+};
+</script>
+
+</body>
+</html>

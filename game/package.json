@@ -1,0 +1,13 @@
+{
+  "name": "jeu-carte-squelette",
+  "version": "1.0.0",
+  "description": "Squelette de jeu de cartes tour par tour en ligne (2 joueurs + spectateurs)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "socket.io": "^4.7.5"
+  }
+}
