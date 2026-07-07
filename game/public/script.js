@@ -21,10 +21,23 @@ const suitClasses = {
   '♣': 'suit-club',
 };
 
-function renderHands(hands) {
+function renderHands(hands, tokens) {
   els.myHands.innerHTML = '';
 
-  hands.forEach(hand => {
+  hands.forEach((hand, handIndex) => {
+    const groupDiv = document.createElement('div');
+    groupDiv.className = 'hand-group';
+
+    const slotEl = document.createElement('div');
+    slotEl.className = 'token-slot';
+    makeDropTarget(slotEl, { player: myRole, hand: handIndex });
+
+    const token = tokens.slots[myRole][handIndex];
+    if (token != null) {
+      slotEl.appendChild(createTokenEl(token));
+    }
+    groupDiv.appendChild(slotEl);
+
     const handDiv = document.createElement('div');
     handDiv.className = 'hand';
 
@@ -56,7 +69,8 @@ function renderHands(hands) {
       handDiv.appendChild(cardDiv);
     });
 
-    els.myHands.appendChild(handDiv);
+    groupDiv.appendChild(handDiv);
+    els.myHands.appendChild(groupDiv);
   });
 }
 
@@ -195,8 +209,8 @@ socket.on('gameState', (view) => {
     els.game.classList.remove("hidden");
     els.lobby.classList.add("hidden");
 
-    if (myRole >= 0) renderHands(view.hand);
     if (view.tokens) {
+      if (myRole >= 0) renderHands(view.hand, view.tokens);
       renderOpponents(view.players, view.tokens);
       renderCenterTokens(view.tokens);
     }

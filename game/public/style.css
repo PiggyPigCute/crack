@@ -248,6 +248,13 @@ button:disabled {
     gap: 36px;
 }
 
+.hand-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
 /* ---------- Opponents row ---------- */
 
 #opponents-row {
