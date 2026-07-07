@@ -9,7 +9,8 @@ els = {
   playersList: document.getElementById('players-list'),
   btnNewGame: document.getElementById('btn-new-game'),
   btnChangeName: document.getElementById('btn-change-name'),
-  inputName: document.getElementById('input-name')
+  inputName: document.getElementById('input-name'),
+  btnStartGameContainer: document.getElementById('btn-start-game-container')
 }
 
 socket.on('role', (role) => {
@@ -19,12 +20,29 @@ socket.on('role', (role) => {
 
 socket.on('gameState', (view) => {
 
-  // Indicateur de tour
-  els.tour.textContent = view.inGame;
-  els.tour.classList.toggle('mon-tour', view.inGame);
+  console.log(view);
+  
+  if (view.inGame) {
+    if (els.game.classList.contains('hidden')) {
+      els.game.classList.remove("hiddent"),
+      els.lobby.classList.add("hidden")
+    }
+  } else {
+    if (els.lobby.classList.contains('hidden')) {
+      els.lobby.classList.remove("hiddent"),
+      els.game.classList.add("hidden")
+    }
+    
+    // Start Game Button
+    if (myRole == 0 && els.btnStartGameContainer.innerHTML == '') { //admin
+      const div = document.createElement('div');
+      div.className = 'btn-start-game';
+      div.textContent = 'Jouer !';
+      div.onclick = () => socket.emit('startGame');
+      els.btnStartGameContainer.appendChild(div)
+    }
 
-  // Ma main (uniquement si je suis joueur)
-  if (myRole >= 0) {
+    // player list
     els.playersList.innerHTML = '';
     view.players.forEach((player, role) => {
       const div = document.createElement('div');
@@ -33,6 +51,10 @@ socket.on('gameState', (view) => {
       els.playersList.appendChild(div);
     });
   }
+
+  // Indicateur de inGame
+  els.tour.textContent = view.inGame;
+  els.tour.classList.toggle('mon-tour', view.inGame);
 });
 
 els.btnChangeName.onclick = () => {

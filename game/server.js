@@ -1,23 +1,14 @@
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
-
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
-
 app.use(express.static('public'));
 
-function creerDeck() {
-  const deck = [];
-  for (let i = 1; i <= 20; i++) deck.push(i);
-  // mélange
-  for (let i = deck.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [deck[i], deck[j]] = [deck[j], deck[i]];
-  }
-  return deck;
-}
+const vs = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+const cs = ['♠', '♥', '♦', '♣'];
+const joker = '★'
 
 function newGame() {
   return {
@@ -25,6 +16,7 @@ function newGame() {
     players: [],
     disconnectedPlayers: [],
     settings: {
+      cardsPerHand: 2,
       handsPerPlayer: 1,
       nbrJokers: 0
     }
@@ -32,7 +24,6 @@ function newGame() {
 }
 
 let game = newGame();
-
 const roles = new Map();
 
 function viewFor(role) {
@@ -89,11 +80,42 @@ io.on('connection', (socket) => {
     spreadState()
   })
 
-  // --- Redémarrer la game (pratique pour tester) ---
   socket.on('newGame', () => {
     game = newGame();
     spreadState();
   });
+
+  socket.on('startGame', () => {
+    if (game.inGame) return;  // can't start a game during a game
+    if (role != 0) return;    // must be admin (role 0) to start game
+    
+    // construction du deck
+    const deck = [];
+    vs.forEach(v => {
+      cs.forEach(c => {
+        deck.push({v:v, c:c})
+      })
+    })
+    for (i=0; i<game.nbrJokers; i++) {
+      deck.push({v:joker, c:''})
+    }
+
+    // mélange
+    for (let i = deck.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [deck[i], deck[j]] = [deck[j], deck[i]];
+    }
+
+    // distribution
+    game.hands = []
+    for (i=0; i<game.players.length; i++) {
+      game.hands.push(deck.splice(0, game.cardsPerHand))
+    }
+
+    game.inGame = true
+
+    spreadState();
+  })
 
   socket.on('disconnect', () => {
     const r = roles.get(socket.id);
