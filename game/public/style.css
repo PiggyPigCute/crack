@@ -295,15 +295,9 @@ button:disabled {
     color: #7b7b7b;
 }
 
-.card.joker {
-    color: var(--gold);
-}
-
-.card.joker .card-value {
-    font-size: 67px;
-    line-height: 1;
+.joker-star {
+    width: 44px;
+    height: 44px;
     background: conic-gradient(from 0deg, #ff3b3b, #ff9d1f, #ffe14d, #4ade80, #38bdf8, #a78bfa, #ff3b3b);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
 }

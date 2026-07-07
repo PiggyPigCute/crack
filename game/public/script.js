@@ -29,18 +29,26 @@ function renderHands(hands) {
     hand.forEach(card => {
       const cardDiv = document.createElement('div');
       cardDiv.className = 'card';
-      cardDiv.classList.add(card.suit ? suitClasses[card.suit] : 'joker');
-
-      const valueEl = document.createElement('span');
-      valueEl.className = 'card-value';
-      valueEl.textContent = card.value;
-      cardDiv.appendChild(valueEl);
 
       if (card.suit) {
+        cardDiv.classList.add(suitClasses[card.suit]);
+
+        const valueEl = document.createElement('span');
+        valueEl.className = 'card-value';
+        valueEl.textContent = card.value;
+        cardDiv.appendChild(valueEl);
+
         const suitEl = document.createElement('span');
         suitEl.className = 'card-suit';
         suitEl.textContent = card.suit;
         cardDiv.appendChild(suitEl);
+      } else {
+        cardDiv.classList.add('joker');
+        cardDiv.title = 'Joker';
+
+        const starEl = document.createElement('div');
+        starEl.className = 'joker-star';
+        cardDiv.appendChild(starEl);
       }
 
       handDiv.appendChild(cardDiv);
