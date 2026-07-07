@@ -255,6 +255,7 @@ io.on('connection', (socket) => {
     }
     roles.delete(socket.id);
     console.log(`Déconnexion ${socket.id} (${r})`);
+    spreadState();
   });
 });
 
