@@ -304,6 +304,11 @@ button:disabled {
     font-weight: bold;
     color: var(--ink);
 }
+.disconnected-opponent-name {
+    font-size: 13px;
+    font-style: oblique;
+    color: red;
+}
 
 .opponent-hands {
     display: flex;

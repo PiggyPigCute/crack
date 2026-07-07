@@ -175,7 +175,7 @@ function renderCenterTokens(tokens) {
   }
 }
 
-function renderOpponents(players, tokens) {
+function renderOpponents(players, tokens, disconnectedPlayers) {
   els.opponentsRow.innerHTML = '';
 
   players.forEach((player, playerIndex) => {
@@ -185,7 +185,11 @@ function renderOpponents(players, tokens) {
     opponentDiv.className = 'opponent';
 
     const nameEl = document.createElement('div');
-    nameEl.className = 'opponent-name';
+    if (disconnectedPlayers.includes(playerIndex)) {
+      nameEl.className = 'disconnected-opponent-name'
+    } else {
+      nameEl.className = 'opponent-name';
+    }
     nameEl.textContent = player.name;
     opponentDiv.appendChild(nameEl);
 
@@ -304,7 +308,7 @@ socket.on('gameState', (view) => {
     if (view.tokens) {
       animateTokens(() => {
         if (myRole >= 0) renderHands(view.hand, view.tokens);
-        renderOpponents(view.players, view.tokens);
+        renderOpponents(view.players, view.tokens, view.disconnectedPlayers);
         renderCenterTokens(view.tokens);
       });
       renderNextTurnButton(myRole == 0, view.tokens, view.river);
