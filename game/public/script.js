@@ -37,14 +37,19 @@ socket.on('gameState', (view) => {
     
     // Start Game Button
     console.log('yes')
-    if (myRole == 0 && els.btnStartGameContainer.innerHTML == '') { //admin
-      console.log('yess')
-      const div = document.createElement('div');
-      div.className = 'btn-start-game';
-      div.textContent = 'Jouer !';
-      div.onclick = () => socket.emit('startGame');
-      els.btnStartGameContainer.appendChild(div)
+    if (myRole == 0) { //admin
+      if (els.btnStartGameContainer.innerHTML == '') {
+        console.log('yess')
+        const div = document.createElement('div');
+        div.className = 'btn-start-game';
+        div.textContent = 'Jouer !';
+        div.onclick = () => socket.emit('startGame');
+        els.btnStartGameContainer.appendChild(div)
+      }
+    } else {
+      els.btnStartGameContainer.innerHTML = '';
     }
+
 
     // player list
     els.playersList.innerHTML = '';
