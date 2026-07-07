@@ -73,7 +73,7 @@ io.on('connection', (socket) => {
   console.log(`Connexion ${socket.id} -> ${role}`);
 
   // Envoie l'état initial (filtré) juste à ce client
-  socket.emit('gameState', viewFor(role));
+  spreadState();
 
   socket.on('changeName', (newName) => {
     game.players[role].name = newName;
