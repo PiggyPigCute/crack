@@ -9,7 +9,9 @@ els = {
   btnChangeName: document.getElementById('btn-change-name'),
   inputName: document.getElementById('input-name'),
   settingsPanel: document.getElementById('settings-panel'),
-  myHands: document.getElementById('my-hands')
+  myHands: document.getElementById('my-hands'),
+  opponentsRow: document.getElementById('opponents-row'),
+  centerTokens: document.getElementById('center-tokens')
 }
 
 const suitClasses = {
@@ -55,6 +57,74 @@ function renderHands(hands) {
     });
 
     els.myHands.appendChild(handDiv);
+  });
+}
+
+function createTokenEl(token) {
+  const tokenEl = document.createElement('div');
+  tokenEl.className = 'token';
+  tokenEl.textContent = token;
+  tokenEl.draggable = true;
+  tokenEl.ondragstart = (e) => {
+    e.dataTransfer.setData('text/plain', token);
+  };
+  return tokenEl;
+}
+
+function makeDropTarget(el, to) {
+  el.ondragover = (e) => {
+    e.preventDefault();
+    el.classList.add('drag-over');
+  };
+  el.ondragleave = () => el.classList.remove('drag-over');
+  el.ondrop = (e) => {
+    e.preventDefault();
+    el.classList.remove('drag-over');
+    const token = Number(e.dataTransfer.getData('text/plain'));
+    socket.emit('moveToken', { token, to });
+  };
+}
+
+makeDropTarget(els.centerTokens, 'center');
+
+function renderCenterTokens(tokens) {
+  els.centerTokens.innerHTML = '';
+  tokens.center.forEach(token => {
+    els.centerTokens.appendChild(createTokenEl(token));
+  });
+}
+
+function renderOpponents(players, tokens) {
+  els.opponentsRow.innerHTML = '';
+
+  players.forEach((player, playerIndex) => {
+    if (playerIndex == myRole) return;
+
+    const opponentDiv = document.createElement('div');
+    opponentDiv.className = 'opponent';
+
+    const nameEl = document.createElement('div');
+    nameEl.className = 'opponent-name';
+    nameEl.textContent = player.name;
+    opponentDiv.appendChild(nameEl);
+
+    const slotsDiv = document.createElement('div');
+    slotsDiv.className = 'opponent-slots';
+
+    tokens.slots[playerIndex].forEach((token, hand) => {
+      const slotEl = document.createElement('div');
+      slotEl.className = 'token-slot';
+      makeDropTarget(slotEl, { player: playerIndex, hand });
+
+      if (token != null) {
+        slotEl.appendChild(createTokenEl(token));
+      }
+
+      slotsDiv.appendChild(slotEl);
+    });
+
+    opponentDiv.appendChild(slotsDiv);
+    els.opponentsRow.appendChild(opponentDiv);
   });
 }
 
@@ -126,6 +196,10 @@ socket.on('gameState', (view) => {
     els.lobby.classList.add("hidden");
 
     if (myRole >= 0) renderHands(view.hand);
+    if (view.tokens) {
+      renderOpponents(view.players, view.tokens);
+      renderCenterTokens(view.tokens);
+    }
   } else {
     els.lobby.classList.remove("hidden");
     els.game.classList.add("hidden");
@@ -135,10 +209,10 @@ socket.on('gameState', (view) => {
 
     // player list
     els.playersList.innerHTML = '';
-    view.players.forEach((player, role) => {
+    view.players.forEach((player) => {
       const div = document.createElement('div');
       div.className = 'player-tag';
-      div.textContent = player.name + ' ' + role;
+      div.textContent = player.name;
       els.playersList.appendChild(div);
     });
   }

@@ -105,11 +105,10 @@ io.on('connection', (socket) => {
     
     // tokens
     const tokenMax = game.players.length * game.settings.handsPerPlayer
-    game.token = {
+    game.tokens = {
       max: tokenMax,
-      mid: new Set([...Array(tokenMax).keys()]),
-      act: Array.from({length: game.players.length}, () => Array(game.settings.handsPerPlayer).fill(-1)),
-      old: Array.from({length: game.players.length}, () => Array(game.settings.handsPerPlayer).fill([])),
+      center: Array.from({length: tokenMax}, (_, i) => i + 1),                                     // tokens sitting in the middle of the table
+      slots: Array.from({length: game.players.length}, () => Array(game.settings.handsPerPlayer).fill(null)), // token id in front of each hand, or null
     }
 
     // construction du deck
@@ -148,6 +147,54 @@ io.on('connection', (socket) => {
 
     spreadState();
   })
+
+  socket.on('moveToken', ({ token, to } = {}) => {
+    if (!game.inGame) return;                                          // tokens only move during a game
+    if (role < 0) return;                                              // spectators can't move tokens
+    const tokens = game.tokens;
+    if (!tokens) return;
+    if (!Number.isInteger(token) || token < 1 || token > tokens.max) return;
+
+    // locate the token's current position
+    const centerIndex = tokens.center.indexOf(token);
+    let from = null; // { player, hand }, null when the token is in the center
+    if (centerIndex == -1) {
+      for (let p = 0; p < tokens.slots.length && !from; p++) {
+        const h = tokens.slots[p].indexOf(token);
+        if (h != -1) from = { player: p, hand: h };
+      }
+      if (!from) return; // unknown token position
+    }
+
+    if (to === 'center') {
+      if (centerIndex != -1) return; // already in the center
+      tokens.slots[from.player][from.hand] = null;
+      tokens.center.push(token);
+    } else {
+      const { player, hand } = to || {};
+      if (!tokens.slots[player] || tokens.slots[player][hand] === undefined) return;
+      if (from && from.player == player && from.hand == hand) return; // dropped on itself
+
+      const occupant = tokens.slots[player][hand];
+      tokens.slots[player][hand] = token;
+      if (centerIndex != -1) {
+        tokens.center.splice(centerIndex, 1);
+      } else {
+        tokens.slots[from.player][from.hand] = null;
+      }
+
+      // swap: send the slot's previous occupant to where the dragged token came from
+      if (occupant != null) {
+        if (from) {
+          tokens.slots[from.player][from.hand] = occupant;
+        } else {
+          tokens.center.push(occupant);
+        }
+      }
+    }
+
+    spreadState();
+  });
 
   socket.on('disconnect', () => {
     const r = roles.get(socket.id);
