@@ -86,9 +86,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('startGame', () => {
-    console.log("youpi")
-
-    return;
+    console.log("Stating new game")
 
     if (game.inGame) return;  // can't start a game during a game
     if (role != 0) return;    // must be admin (role 0) to start game
