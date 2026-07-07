@@ -16,7 +16,7 @@ const defaultSettings = {
   nbrJokers: 0
 };
 
-const riverRevealSchedule = [0, 3, 4, 5]; // river cards revealed at turn 0, 1, 2, 3
+const riverRevealSchedule = [0, 3, 4, 5];
 
 function newGame() {
   return {
@@ -35,6 +35,7 @@ function viewFor(role) {
     return {
       inGame: true,
       players: game.players,
+      disconnectedPlayers: game.disconnectedPlayers,
       hand: role == -1 ? game.hands : game.hands[role],
       river: game.river.slice(0, riverRevealSchedule[game.turn]),
       tokens: game.tokens,
@@ -44,6 +45,7 @@ function viewFor(role) {
     return {
       inGame: false,
       players: game.players,
+      disconnectedPlayers: game.disconnectedPlayers,
       settings: game.settings
     }
   }
