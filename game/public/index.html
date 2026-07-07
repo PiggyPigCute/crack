@@ -22,7 +22,7 @@
       <p class="role-line">Rôle : <span id="role">connexion...</span></p>
 
       <div class="conteneur">
-        <input type="text" id="input-name" placeholder="Choisi un super pseudo">
+        <input type="text" id="input-name" placeholder="Choisi un pseudo...">
         <button id="btn-change-name">Valider</button>
       </div>
     </div>
@@ -33,27 +33,7 @@
   </div>
 
   <div id="game" class="hidden">
-    <p>Tour actuel : <span id="tour">-</span></p>
-    <p>Cartes restantes dans le deck : <span id="deck-restant">-</span></p>
-  
-    <div id="zone-jeu" style="display:none;">
-      <h3>Ma main</h3>
-      <div class="cartes" id="main-joueur"></div>
-      <button id="btn-piocher">Piocher une carte</button>
-  
-      <h3>Défausse</h3>
-      <div class="cartes" id="defausse"></div>
-    </div>
-  
-    <div id="zone-spectateur" style="display:none;">
-      <p>Joueur 1 : <span id="spec-j1"></span> cartes en main</p>
-      <p>Joueur 2 : <span id="spec-j2"></span> cartes en main</p>
-    </div>
-  
-    <button id="btn-new-game">Nouvelle partie</button>
-  
-    <h3>Historique</h3>
-    <div id="log"></div>
+    <div id="mes-mains"></div>
   </div>
 
   <script src="/socket.io/socket.io.js"></script>

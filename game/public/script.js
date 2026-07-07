@@ -5,12 +5,50 @@ els = {
   lobby: document.getElementById('lobby'),
   game: document.getElementById('game'),
   role: document.getElementById('role'),
-  tour: document.getElementById('tour'),
   playersList: document.getElementById('players-list'),
-  btnNewGame: document.getElementById('btn-new-game'),
   btnChangeName: document.getElementById('btn-change-name'),
   inputName: document.getElementById('input-name'),
-  settingsPanel: document.getElementById('settings-panel')
+  settingsPanel: document.getElementById('settings-panel'),
+  mesMains: document.getElementById('mes-mains')
+}
+
+const rougeSymboles = ['♥', '♦'];
+
+function renderHands(hands) {
+  els.mesMains.innerHTML = '';
+
+  hands.forEach(hand => {
+    const handDiv = document.createElement('div');
+    handDiv.className = 'main-cartes';
+
+    hand.forEach(card => {
+      const cardDiv = document.createElement('div');
+      cardDiv.className = 'carte-main';
+      if (!card.c) {
+        cardDiv.classList.add('joker');
+      } else if (rougeSymboles.includes(card.c)) {
+        cardDiv.classList.add('rouge');
+      } else {
+        cardDiv.classList.add('noir');
+      }
+
+      const valeur = document.createElement('span');
+      valeur.className = 'valeur';
+      valeur.textContent = card.v;
+      cardDiv.appendChild(valeur);
+
+      if (card.c) {
+        const symbole = document.createElement('span');
+        symbole.className = 'symbole';
+        symbole.textContent = card.c;
+        cardDiv.appendChild(symbole);
+      }
+
+      handDiv.appendChild(cardDiv);
+    });
+
+    els.mesMains.appendChild(handDiv);
+  });
 }
 
 const settingsMeta = [
@@ -79,10 +117,12 @@ socket.on('gameState', (view) => {
   if (view.inGame) {
     els.game.classList.remove("hidden");
     els.lobby.classList.add("hidden");
+
+    if (myRole >= 0) renderHands(view.hand);
   } else {
     els.lobby.classList.remove("hidden");
     els.game.classList.add("hidden");
-    
+
     // Settings panel (+ start button for admin)
     renderSettingsPanel(view.settings, myRole == 0);
 
@@ -95,18 +135,10 @@ socket.on('gameState', (view) => {
       els.playersList.appendChild(div);
     });
   }
-
-  // Indicateur de inGame
-  els.tour.textContent = view.inGame;
-  els.tour.classList.toggle('mon-tour', view.inGame);
 });
 
 els.btnChangeName.onclick = () => {
   socket.emit('changeName', els.inputName.value);
-};
-
-els.btnNewGame.onclick = () => {
-  socket.emit('newGame');
 };
 
 /* DEBUG afac */
