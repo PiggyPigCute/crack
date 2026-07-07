@@ -280,11 +280,11 @@ button:disabled {
 }
 
 .card.suit-heart {
-    color: #b3261e;
+    color: #a81f1f;
 }
 
 .card.suit-diamond {
-    color: #d9691d;
+    color: #d9491d;
 }
 
 .card.suit-spade {
@@ -292,7 +292,7 @@ button:disabled {
 }
 
 .card.suit-club {
-    color: #6e6e6e;
+    color: #565656;
 }
 
 .card.joker {
