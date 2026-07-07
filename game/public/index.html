@@ -9,23 +9,30 @@
 </head>
 
 <body>
-  
-  <h1>Crack</h1>
-  
+
   <div id="lobby">
-    <p>Rôle : <span id="role">connexion...</span></p>
+    <div class="lobby-col lobby-col-players">
+      <h2>Joueur·euse·s</h2>
+      <div id="players-list"></div>
+    </div>
 
-    <div class="conteneur">
-    <input type="text" id="input-name" placeholder="Choisi un super pseudo">
-    <button id="btn-change-name">Valider</button>
+    <div class="lobby-col lobby-col-center">
+      <h1>Crack</h1>
+      <p class="site-tag">.ernestie.fr</p>
+      <p class="role-line">Rôle : <span id="role">connexion...</span></p>
 
-    <div id="players-list"></div>
+      <div class="conteneur">
+        <input type="text" id="input-name" placeholder="Choisi un super pseudo">
+        <button id="btn-change-name">Valider</button>
+      </div>
+    </div>
 
-    <div id="settings-panel"></div>
+    <div class="lobby-col lobby-col-settings">
+      <div id="settings-panel"></div>
+    </div>
   </div>
-  </div>
 
-  <div id="game">
+  <div id="game" class="hidden">
     <p>Tour actuel : <span id="tour">-</span></p>
     <p>Cartes restantes dans le deck : <span id="deck-restant">-</span></p>
   
