@@ -40,9 +40,12 @@ h1, h2, h3 {
 }
 
 h1 {
-    font-size: 42px;
+    font-size: 64px;
     letter-spacing: 2px;
-    text-shadow: 0 2px 0 var(--gold-light);
+    background: linear-gradient(180deg, var(--gold-light), var(--gold));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
 }
 
 h2, h3 {
@@ -88,15 +91,16 @@ h2, h3 {
     flex-direction: column;
     align-items: center;
     text-align: center;
-    justify-content: center;
+    justify-content: flex-start;
     gap: 6px;
+    padding-top: 30px;
 }
 
 .site-tag {
-    margin: 0 0 18px;
-    font-size: 12px;
-    letter-spacing: 3px;
-    text-transform: uppercase;
+    margin: 0 0 32px;
+    font-family: 'Courier New', Consolas, Menlo, monospace;
+    font-size: 13px;
+    letter-spacing: 1px;
     color: var(--ink-soft);
 }
 
