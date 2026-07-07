@@ -36,10 +36,8 @@ socket.on('gameState', (view) => {
     }
     
     // Start Game Button
-    console.log('yes')
     if (myRole == 0) { //admin
       if (els.btnStartGameContainer.innerHTML == '') {
-        console.log('yess')
         const div = document.createElement('div');
         div.className = 'btn-start-game';
         div.textContent = 'Jouer !';
