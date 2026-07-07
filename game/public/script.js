@@ -23,15 +23,11 @@ socket.on('gameState', (view) => {
   console.log(view);
   
   if (view.inGame) {
-    if (els.game.classList.contains('hidden')) {
-      els.game.classList.remove("hiddent");
-      els.lobby.classList.add("hidden");
-    }
+    els.game.classList.remove("hidden");
+    els.lobby.classList.add("hidden");
   } else {
-    if (els.lobby.classList.contains('hidden')) {
-      els.lobby.classList.remove("hiddent");
-      els.game.classList.add("hidden");
-    }
+    els.lobby.classList.remove("hidden");
+    els.game.classList.add("hidden");
     
     // Start Game Button
     if (myRole == 0) { //admin
