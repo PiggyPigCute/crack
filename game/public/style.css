@@ -392,10 +392,20 @@ button:disabled {
     font-weight: bold;
     box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.15), 0 3px 6px rgba(0, 0, 0, 0.35);
     cursor: grab;
+    touch-action: none;
 }
 
 .token:active {
     cursor: grabbing;
+}
+
+.token-ghost {
+    position: fixed;
+    z-index: 1000;
+    margin: 0;
+    pointer-events: none;
+    transform: scale(1.08);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
 }
 
 .hand {
@@ -484,4 +494,96 @@ button:disabled {
     height: 44px;
     background: conic-gradient(from 0deg, #ff3b3b, #ff9d1f, #ffe14d, #4ade80, #38bdf8, #a78bfa, #ff3b3b);
     clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+}
+
+/* ---------- Mobile ---------- */
+
+@media (max-width: 700px) {
+    html, body {
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    body {
+        height: auto;
+        min-height: 100vh;
+        align-items: flex-start;
+        padding: 16px 0;
+    }
+
+    #lobby {
+        flex-direction: column;
+        height: auto;
+        gap: 14px;
+        padding: 12px;
+    }
+
+    .lobby-col-center {
+        order: 1;
+        padding-top: 10px;
+    }
+
+    .lobby-col-players {
+        order: 2;
+    }
+
+    .lobby-col-settings {
+        order: 3;
+    }
+
+    h1 {
+        font-size: 44px;
+    }
+
+    #players-list {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    #players-list .player-tag {
+        padding: 6px 10px;
+        font-size: 13px;
+    }
+
+    #game {
+        height: auto;
+        min-height: 100vh;
+        justify-content: flex-start;
+        gap: 24px;
+        padding: 20px 16px 32px;
+    }
+
+    /* bigger touch targets */
+    .token-slot {
+        width: 56px;
+        height: 56px;
+    }
+
+    .token {
+        width: 52px;
+        height: 52px;
+        font-size: 20px;
+    }
+
+    .token-recorded {
+        width: 30px;
+        height: 30px;
+        font-size: 12px;
+    }
+
+    .card {
+        width: 68px;
+        height: 96px;
+        font-size: 22px;
+    }
+
+    .card .card-suit {
+        font-size: 24px;
+    }
+
+    .joker-star {
+        width: 52px;
+        height: 52px;
+    }
 }

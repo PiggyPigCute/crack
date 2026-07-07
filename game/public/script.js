@@ -102,6 +102,7 @@ function renderHands(hands, tokens) {
 }
 
 const tokenEls = new Map(); // token id -> persistent DOM element, so moves can be animated instead of recreated
+const dropTargets = new WeakMap(); // element -> `to` value passed to the 'moveToken' socket event
 
 function getTokenEl(token) {
   let tokenEl = tokenEls.get(token);
@@ -113,6 +114,8 @@ function getTokenEl(token) {
     tokenEl.ondragstart = (e) => {
       e.dataTransfer.setData('text/plain', token);
     };
+    // native HTML5 drag & drop isn't available on touch devices, so drive it manually
+    tokenEl.addEventListener('touchstart', (e) => startTokenTouchDrag(e, tokenEl, token), { passive: false });
     tokenEls.set(token, tokenEl);
   }
   return tokenEl;
@@ -145,6 +148,8 @@ function animateTokens(renderTokens) {
 }
 
 function makeDropTarget(el, to) {
+  dropTargets.set(el, to);
+
   el.ondragover = (e) => {
     e.preventDefault();
     el.classList.add('drag-over');
@@ -156,6 +161,69 @@ function makeDropTarget(el, to) {
     const token = Number(e.dataTransfer.getData('text/plain'));
     socket.emit('moveToken', { token, to });
   };
+}
+
+// walks up from the touch point until it finds a registered drop target (slot or center zone)
+function findDropTarget(x, y) {
+  let el = document.elementFromPoint(x, y);
+  while (el) {
+    if (dropTargets.has(el)) return el;
+    el = el.parentElement;
+  }
+  return null;
+}
+
+// touch equivalent of the native HTML5 drag & drop used above: drags a ghost copy of the
+// token and, on release, emits the same 'moveToken' event as a desktop drop would.
+function startTokenTouchDrag(e, tokenEl, token) {
+  e.preventDefault();
+  const touch = e.touches[0];
+  const rect = tokenEl.getBoundingClientRect();
+  const offsetX = touch.clientX - rect.left;
+  const offsetY = touch.clientY - rect.top;
+
+  const ghost = tokenEl.cloneNode(true);
+  ghost.classList.add('token-ghost');
+  ghost.style.left = `${rect.left}px`;
+  ghost.style.top = `${rect.top}px`;
+  ghost.style.width = `${rect.width}px`;
+  ghost.style.height = `${rect.height}px`;
+  document.body.appendChild(ghost);
+  tokenEl.style.visibility = 'hidden';
+
+  let currentTarget = null;
+
+  function onTouchMove(ev) {
+    ev.preventDefault();
+    const t = ev.touches[0];
+    ghost.style.left = `${t.clientX - offsetX}px`;
+    ghost.style.top = `${t.clientY - offsetY}px`;
+
+    const target = findDropTarget(t.clientX, t.clientY);
+    if (target !== currentTarget) {
+      if (currentTarget) currentTarget.classList.remove('drag-over');
+      if (target) target.classList.add('drag-over');
+      currentTarget = target;
+    }
+  }
+
+  function endDrag() {
+    document.removeEventListener('touchmove', onTouchMove);
+    document.removeEventListener('touchend', endDrag);
+    document.removeEventListener('touchcancel', endDrag);
+
+    ghost.remove();
+    tokenEl.style.visibility = '';
+
+    if (currentTarget) {
+      currentTarget.classList.remove('drag-over');
+      socket.emit('moveToken', { token, to: dropTargets.get(currentTarget) });
+    }
+  }
+
+  document.addEventListener('touchmove', onTouchMove, { passive: false });
+  document.addEventListener('touchend', endDrag);
+  document.addEventListener('touchcancel', endDrag);
 }
 
 makeDropTarget(els.centerTokens, 'center');
