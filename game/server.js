@@ -106,7 +106,29 @@ io.on('connection', (socket) => {
 
     if (game.inGame) return;  // can't start a game during a game
     if (role != 0) return;    // must be admin (role 0) to start game
-    
+
+    // drop currently disconnected players and compact the remaining roles so there's no gap
+    if (game.disconnectedPlayers.length > 0) {
+      const oldToNew = new Map();
+      const newPlayers = [];
+      game.players.forEach((player, oldRole) => {
+        if (game.disconnectedPlayers.includes(oldRole)) return;
+        oldToNew.set(oldRole, newPlayers.length);
+        newPlayers.push(player);
+      });
+      game.players = newPlayers;
+      game.disconnectedPlayers = [];
+
+      for (const [socketId, r] of roles.entries()) {
+        if (r < 0 || !oldToNew.has(r)) continue;
+        const newRole = oldToNew.get(r);
+        if (newRole != r) {
+          roles.set(socketId, newRole);
+          io.to(socketId).emit('role', newRole);
+        }
+      }
+    }
+
     // tokens
     const tokenMax = game.players.length * game.settings.handsPerPlayer
     game.tokens = {
