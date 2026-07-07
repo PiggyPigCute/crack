@@ -276,6 +276,7 @@ socket.on('gameState', (view) => {
 
 els.btnChangeName.onclick = () => {
   socket.emit('changeName', els.inputName.value);
+  els.inputName.value = ''
 };
 
 /* DEBUG afac */
