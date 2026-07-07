@@ -103,9 +103,17 @@ makeDropTarget(els.centerTokens, 'center');
 
 function renderCenterTokens(tokens) {
   els.centerTokens.innerHTML = '';
-  tokens.center.forEach(token => {
-    els.centerTokens.appendChild(createTokenEl(token));
-  });
+
+  for (let token = 1; token <= tokens.max; token++) {
+    const slotEl = document.createElement('div');
+    slotEl.className = 'token-slot';
+
+    if (tokens.center.includes(token)) {
+      slotEl.appendChild(createTokenEl(token));
+    }
+
+    els.centerTokens.appendChild(slotEl);
+  }
 }
 
 function renderOpponents(players, tokens) {
