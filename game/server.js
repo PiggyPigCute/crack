@@ -92,7 +92,7 @@ io.on('connection', (socket) => {
     if (role != 0) return;    // must be admin (role 0) to start game
     
     // tokens
-    tokenMax = game.players.length * game.settings.handsPerPlayer
+    let tokenMax = game.players.length * game.settings.handsPerPlayer
     game.token = {
       max: tokenMax,
       mid: new Set([...Array(tokenMax).keys()]),
@@ -101,7 +101,7 @@ io.on('connection', (socket) => {
     }
 
     // construction du deck
-    const deck = [];
+    let deck = [];
     vs.forEach(v => {
       cs.forEach(c => {
         deck.push({v:v, c:c})
