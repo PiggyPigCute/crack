@@ -279,12 +279,20 @@ button:disabled {
     font-size: 22px;
 }
 
-.card.red {
+.card.suit-heart {
     color: #b3261e;
 }
 
-.card.black {
+.card.suit-diamond {
+    color: #d9691d;
+}
+
+.card.suit-spade {
     color: var(--ink);
+}
+
+.card.suit-club {
+    color: #6e6e6e;
 }
 
 .card.joker {

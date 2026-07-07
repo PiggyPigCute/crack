@@ -12,7 +12,12 @@ els = {
   myHands: document.getElementById('my-hands')
 }
 
-const redSuits = ['♥', '♦'];
+const suitClasses = {
+  '♥': 'suit-heart',
+  '♦': 'suit-diamond',
+  '♠': 'suit-spade',
+  '♣': 'suit-club',
+};
 
 function renderHands(hands) {
   els.myHands.innerHTML = '';
@@ -24,13 +29,7 @@ function renderHands(hands) {
     hand.forEach(card => {
       const cardDiv = document.createElement('div');
       cardDiv.className = 'card';
-      if (!card.suit) {
-        cardDiv.classList.add('joker');
-      } else if (redSuits.includes(card.suit)) {
-        cardDiv.classList.add('red');
-      } else {
-        cardDiv.classList.add('black');
-      }
+      cardDiv.classList.add(card.suit ? suitClasses[card.suit] : 'joker');
 
       const valueEl = document.createElement('span');
       valueEl.className = 'card-value';
