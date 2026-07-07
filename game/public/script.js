@@ -13,8 +13,6 @@ socket.on('gameState', (view) => {
   tourEl.textContent = view.inGame;
   tourEl.classList.toggle('mon-tour', view.inGame);
 
-  document.getElementById('deck-restant').textContent = view.cartesRestantesDansLeDeck;
-
   // Ma main (uniquement si je suis joueur)
   if (myRole >= 0) {
     const mainEl = document.getElementById('main-joueur');
@@ -26,17 +24,6 @@ socket.on('gameState', (view) => {
       mainEl.appendChild(div);
     });
   }
-
-  // Défausse (visible par tous)
-  const defausseEl = document.getElementById('defausse');
-  defausseEl.innerHTML = '';
-  view.defausse.forEach((carte) => {
-    const div = document.createElement('div');
-    div.className = 'carte';
-    div.textContent = carte;
-    div.style.cursor = 'default';
-    defausseEl.appendChild(div);
-  });
 });
 
 document.getElementById('btn-new-game').onclick = () => {
