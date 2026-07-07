@@ -40,6 +40,7 @@ h1, h2, h3 {
 }
 
 h1 {
+    margin: 0 0 2px;
     font-size: 64px;
     letter-spacing: 2px;
     background: linear-gradient(180deg, var(--gold-light), var(--gold));
@@ -97,7 +98,7 @@ h2, h3 {
 }
 
 .site-tag {
-    margin: 0 0 32px;
+    margin: 0;
     font-family: 'Courier New', Consolas, Menlo, monospace;
     font-size: 13px;
     letter-spacing: 1px;
@@ -105,7 +106,7 @@ h2, h3 {
 }
 
 .role-line {
-    margin: 0 0 18px;
+    margin: auto 0 18px;
     font-size: 14px;
     color: var(--ink-soft);
 }
@@ -168,7 +169,7 @@ button:disabled {
     font-weight: bold;
     letter-spacing: 1px;
     color: #fffaf0;
-    background: linear-gradient(180deg, var(--gold-light), var(--gold));
+    background: var(--gold);
     border: 1px solid var(--gold);
     border-radius: 10px;
     cursor: pointer;
