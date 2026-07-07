@@ -10,7 +10,50 @@ els = {
   btnNewGame: document.getElementById('btn-new-game'),
   btnChangeName: document.getElementById('btn-change-name'),
   inputName: document.getElementById('input-name'),
-  btnStartGameContainer: document.getElementById('btn-start-game-container')
+  btnStartGameContainer: document.getElementById('btn-start-game-container'),
+  settingsAdmin: document.getElementById('settings-admin')
+}
+
+const settingsMeta = [
+  { key: 'cardsPerHand', label: 'Cartes par main', min: 2 },
+  { key: 'handsPerPlayer', label: 'Mains par joueur·euse', min: 1 },
+  { key: 'nbrJokers', label: 'Nombre de jokers', min: 0 },
+];
+
+function renderSettingsAdmin(settings) {
+  els.settingsAdmin.innerHTML = '';
+
+  const title = document.createElement('h3');
+  title.textContent = 'Paramètres de la partie';
+  els.settingsAdmin.appendChild(title);
+
+  settingsMeta.forEach(meta => {
+    const value = settings[meta.key];
+
+    const row = document.createElement('div');
+    row.className = 'setting-row';
+
+    const label = document.createElement('span');
+    label.textContent = meta.label + ' : ';
+    row.appendChild(label);
+
+    const btnDec = document.createElement('button');
+    btnDec.textContent = '-';
+    btnDec.disabled = value <= meta.min;
+    btnDec.onclick = () => socket.emit('updateSetting', { key: meta.key, value: value - 1 });
+    row.appendChild(btnDec);
+
+    const val = document.createElement('span');
+    val.textContent = value;
+    row.appendChild(val);
+
+    const btnInc = document.createElement('button');
+    btnInc.textContent = '+';
+    btnInc.onclick = () => socket.emit('updateSetting', { key: meta.key, value: value + 1 });
+    row.appendChild(btnInc);
+
+    els.settingsAdmin.appendChild(row);
+  });
 }
 
 socket.on('role', (role) => {
@@ -40,6 +83,13 @@ socket.on('gameState', (view) => {
       }
     } else {
       els.btnStartGameContainer.innerHTML = '';
+    }
+
+    // Settings (admin only)
+    if (myRole == 0) {
+      renderSettingsAdmin(view.settings);
+    } else {
+      els.settingsAdmin.innerHTML = '';
     }
 
 

@@ -52,6 +52,13 @@ button {
     cursor: pointer;
 }
 
+.setting-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 4px 0;
+}
+
 #log {
     font-size: 13px;
     color: #555;

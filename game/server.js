@@ -10,16 +10,18 @@ const vs = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
 const cs = ['♠', '♥', '♦', '♣'];
 const joker = '★'
 
+const defaultSettings = {
+  cardsPerHand: 2,
+  handsPerPlayer: 1,
+  nbrJokers: 0
+};
+
 function newGame() {
   return {
     inGame: false,
     players: [],
     disconnectedPlayers: [],
-    settings: {
-      cardsPerHand: 2,
-      handsPerPlayer: 1,
-      nbrJokers: 0
-    }
+    settings: { ...defaultSettings }
   }
 }
 
@@ -79,6 +81,16 @@ io.on('connection', (socket) => {
     game.players[role].name = newName;
     spreadState()
   })
+
+  socket.on('updateSetting', ({ key, value } = {}) => {
+    if (role != 0) return;                                        // must be admin (role 0)
+    if (game.inGame) return;                                       // can't change settings during a game
+    if (!Object.prototype.hasOwnProperty.call(defaultSettings, key)) return;
+    if (!Number.isInteger(value) || value < defaultSettings[key]) return;
+
+    game.settings[key] = value;
+    spreadState();
+  });
 
   socket.on('newGame', () => {
     game = newGame();
