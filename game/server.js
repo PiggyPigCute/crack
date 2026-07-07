@@ -92,7 +92,7 @@ io.on('connection', (socket) => {
     if (role != 0) return;    // must be admin (role 0) to start game
     
     // tokens
-    let tokenMax = game.players.length * game.settings.handsPerPlayer
+    const tokenMax = game.players.length * game.settings.handsPerPlayer
     game.token = {
       max: tokenMax,
       mid: new Set([...Array(tokenMax).keys()]),
@@ -101,13 +101,13 @@ io.on('connection', (socket) => {
     }
 
     // construction du deck
-    let deck = [];
+    const deck = [];
     vs.forEach(v => {
       cs.forEach(c => {
         deck.push({v:v, c:c})
       })
     })
-    for (i=0; i<game.settings.nbrJokers; i++) {
+    for (let i=0; i<game.settings.nbrJokers; i++) {
       deck.push({v:joker, c:''})
     }
 
@@ -119,9 +119,9 @@ io.on('connection', (socket) => {
 
     // distribution
     game.hands = []
-    for (i=0; i<game.players.length; i++) {
+    for (let p=0; p<game.players.length; p++) {
       let persoHands = []
-      for (i=0; i<game.settings.handsPerPlayer; i++) {
+      for (let h=0; h<game.settings.handsPerPlayer; h++) {
         persoHands.push(deck.splice(0, game.settings.cardsPerHand))
       }
       game.hands.push(persoHands)
