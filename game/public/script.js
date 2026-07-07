@@ -190,24 +190,21 @@ function renderOpponents(players, tokens) {
     opponentDiv.appendChild(nameEl);
 
     const recordedByHand = tokens.history[playerIndex];
-    if (recordedByHand.some(recorded => recorded.length > 0)) {
-      const tokensRow = document.createElement('div');
-      tokensRow.className = 'opponent-tokens';
-
-      recordedByHand.forEach(recorded => {
-        const cell = document.createElement('div');
-        cell.className = 'opponent-hand-tokens';
-        recorded.forEach(token => cell.appendChild(createRecordedTokenEl(token)));
-        tokensRow.appendChild(cell);
-      });
-
-      opponentDiv.appendChild(tokensRow);
-    }
-
-    const slotsDiv = document.createElement('div');
-    slotsDiv.className = 'opponent-slots';
+    const handsDiv = document.createElement('div');
+    handsDiv.className = 'opponent-hands';
 
     tokens.slots[playerIndex].forEach((token, hand) => {
+      const handDiv = document.createElement('div');
+      handDiv.className = 'opponent-hand';
+
+      const recorded = recordedByHand[hand];
+      if (recorded.length > 0) {
+        const tokensEl = document.createElement('div');
+        tokensEl.className = 'opponent-hand-tokens';
+        recorded.forEach(recordedToken => tokensEl.appendChild(createRecordedTokenEl(recordedToken)));
+        handDiv.appendChild(tokensEl);
+      }
+
       const slotEl = document.createElement('div');
       slotEl.className = 'token-slot';
       makeDropTarget(slotEl, { player: playerIndex, hand });
@@ -215,11 +212,12 @@ function renderOpponents(players, tokens) {
       if (token != null) {
         slotEl.appendChild(getTokenEl(token));
       }
+      handDiv.appendChild(slotEl);
 
-      slotsDiv.appendChild(slotEl);
+      handsDiv.appendChild(handDiv);
     });
 
-    opponentDiv.appendChild(slotsDiv);
+    opponentDiv.appendChild(handsDiv);
     els.opponentsRow.appendChild(opponentDiv);
   });
 }
