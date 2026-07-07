@@ -35,11 +35,11 @@ socket.on('gameState', (view) => {
   }
 });
 
-btnChangeName.onclick = () => {
+els.btnChangeName.onclick = () => {
   socket.emit('changeName', inputName);
 };
 
-btnNewGame.onclick = () => {
+els.btnNewGame.onclick = () => {
   socket.emit('newGame');
 };
 
