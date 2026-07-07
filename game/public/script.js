@@ -10,8 +10,7 @@ els = {
   btnNewGame: document.getElementById('btn-new-game'),
   btnChangeName: document.getElementById('btn-change-name'),
   inputName: document.getElementById('input-name'),
-  btnStartGameContainer: document.getElementById('btn-start-game-container'),
-  settingsAdmin: document.getElementById('settings-admin')
+  settingsPanel: document.getElementById('settings-panel')
 }
 
 const settingsMeta = [
@@ -20,12 +19,12 @@ const settingsMeta = [
   { key: 'nbrJokers', label: 'Nombre de jokers', min: 0 },
 ];
 
-function renderSettingsAdmin(settings) {
-  els.settingsAdmin.innerHTML = '';
+function renderSettingsPanel(settings, isAdmin) {
+  els.settingsPanel.innerHTML = '';
 
   const title = document.createElement('h3');
   title.textContent = 'Paramètres de la partie';
-  els.settingsAdmin.appendChild(title);
+  els.settingsPanel.appendChild(title);
 
   settingsMeta.forEach(meta => {
     const value = settings[meta.key];
@@ -37,23 +36,35 @@ function renderSettingsAdmin(settings) {
     label.textContent = meta.label + ' : ';
     row.appendChild(label);
 
-    const btnDec = document.createElement('button');
-    btnDec.textContent = '-';
-    btnDec.disabled = value <= meta.min;
-    btnDec.onclick = () => socket.emit('updateSetting', { key: meta.key, value: value - 1 });
-    row.appendChild(btnDec);
+    if (isAdmin) {
+      const btnDec = document.createElement('button');
+      btnDec.textContent = '-';
+      btnDec.disabled = value <= meta.min;
+      btnDec.onclick = () => socket.emit('updateSetting', { key: meta.key, value: value - 1 });
+      row.appendChild(btnDec);
+    }
 
     const val = document.createElement('span');
     val.textContent = value;
     row.appendChild(val);
 
-    const btnInc = document.createElement('button');
-    btnInc.textContent = '+';
-    btnInc.onclick = () => socket.emit('updateSetting', { key: meta.key, value: value + 1 });
-    row.appendChild(btnInc);
+    if (isAdmin) {
+      const btnInc = document.createElement('button');
+      btnInc.textContent = '+';
+      btnInc.onclick = () => socket.emit('updateSetting', { key: meta.key, value: value + 1 });
+      row.appendChild(btnInc);
+    }
 
-    els.settingsAdmin.appendChild(row);
+    els.settingsPanel.appendChild(row);
   });
+
+  if (isAdmin) {
+    const btnStart = document.createElement('div');
+    btnStart.className = 'btn-start-game';
+    btnStart.textContent = 'Jouer !';
+    btnStart.onclick = () => socket.emit('startGame');
+    els.settingsPanel.appendChild(btnStart);
+  }
 }
 
 socket.on('role', (role) => {
@@ -72,26 +83,8 @@ socket.on('gameState', (view) => {
     els.lobby.classList.remove("hidden");
     els.game.classList.add("hidden");
     
-    // Start Game Button
-    if (myRole == 0) { //admin
-      if (els.btnStartGameContainer.innerHTML == '') {
-        const div = document.createElement('div');
-        div.className = 'btn-start-game';
-        div.textContent = 'Jouer !';
-        div.onclick = () => socket.emit('startGame');
-        els.btnStartGameContainer.appendChild(div)
-      }
-    } else {
-      els.btnStartGameContainer.innerHTML = '';
-    }
-
-    // Settings (admin only)
-    if (myRole == 0) {
-      renderSettingsAdmin(view.settings);
-    } else {
-      els.settingsAdmin.innerHTML = '';
-    }
-
+    // Settings panel (+ start button for admin)
+    renderSettingsPanel(view.settings, myRole == 0);
 
     // player list
     els.playersList.innerHTML = '';
