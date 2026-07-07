@@ -6,8 +6,8 @@ const server = http.createServer(app);
 const io = new Server(server);
 app.use(express.static('public'));
 
-const vs = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
-const cs = ['♠', '♥', '♦', '♣'];
+const cardValues = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+const cardSuits = ['♠', '♥', '♦', '♣'];
 const joker = '★'
 
 const defaultSettings = {
@@ -114,13 +114,13 @@ io.on('connection', (socket) => {
 
     // construction du deck
     const deck = [];
-    vs.forEach(v => {
-      cs.forEach(c => {
-        deck.push({v:v, c:c})
+    cardValues.forEach(value => {
+      cardSuits.forEach(suit => {
+        deck.push({value: value, suit: suit})
       })
     })
     for (let i=0; i<game.settings.nbrJokers; i++) {
-      deck.push({v:joker, c:''})
+      deck.push({value: joker, suit: ''})
     }
 
     // mélange
@@ -132,11 +132,11 @@ io.on('connection', (socket) => {
     // distribution
     game.hands = []
     for (let p=0; p<game.players.length; p++) {
-      let persoHands = []
+      let playerHands = []
       for (let h=0; h<game.settings.handsPerPlayer; h++) {
-        persoHands.push(deck.splice(0, game.settings.cardsPerHand))
+        playerHands.push(deck.splice(0, game.settings.cardsPerHand))
       }
-      game.hands.push(persoHands)
+      game.hands.push(playerHands)
     }
 
     // river

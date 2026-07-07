@@ -9,45 +9,45 @@ els = {
   btnChangeName: document.getElementById('btn-change-name'),
   inputName: document.getElementById('input-name'),
   settingsPanel: document.getElementById('settings-panel'),
-  mesMains: document.getElementById('mes-mains')
+  myHands: document.getElementById('my-hands')
 }
 
-const rougeSymboles = ['♥', '♦'];
+const redSuits = ['♥', '♦'];
 
 function renderHands(hands) {
-  els.mesMains.innerHTML = '';
+  els.myHands.innerHTML = '';
 
   hands.forEach(hand => {
     const handDiv = document.createElement('div');
-    handDiv.className = 'main-cartes';
+    handDiv.className = 'hand';
 
     hand.forEach(card => {
       const cardDiv = document.createElement('div');
-      cardDiv.className = 'carte-main';
-      if (!card.c) {
+      cardDiv.className = 'card';
+      if (!card.suit) {
         cardDiv.classList.add('joker');
-      } else if (rougeSymboles.includes(card.c)) {
-        cardDiv.classList.add('rouge');
+      } else if (redSuits.includes(card.suit)) {
+        cardDiv.classList.add('red');
       } else {
-        cardDiv.classList.add('noir');
+        cardDiv.classList.add('black');
       }
 
-      const valeur = document.createElement('span');
-      valeur.className = 'valeur';
-      valeur.textContent = card.v;
-      cardDiv.appendChild(valeur);
+      const valueEl = document.createElement('span');
+      valueEl.className = 'card-value';
+      valueEl.textContent = card.value;
+      cardDiv.appendChild(valueEl);
 
-      if (card.c) {
-        const symbole = document.createElement('span');
-        symbole.className = 'symbole';
-        symbole.textContent = card.c;
-        cardDiv.appendChild(symbole);
+      if (card.suit) {
+        const suitEl = document.createElement('span');
+        suitEl.className = 'card-suit';
+        suitEl.textContent = card.suit;
+        cardDiv.appendChild(suitEl);
       }
 
       handDiv.appendChild(cardDiv);
     });
 
-    els.mesMains.appendChild(handDiv);
+    els.myHands.appendChild(handDiv);
   });
 }
 
@@ -130,7 +130,7 @@ socket.on('gameState', (view) => {
     els.playersList.innerHTML = '';
     view.players.forEach((player, role) => {
       const div = document.createElement('div');
-      div.className = 'carte';
+      div.className = 'player-tag';
       div.textContent = player.name + ' ' + role;
       els.playersList.appendChild(div);
     });
