@@ -23,7 +23,9 @@ socket.on('gameState', (view) => {
   console.log(view);
   
   if (view.inGame) {
+    console.log('dbg 1')
     if (els.game.classList.contains('hidden')) {
+      console.log('debg 2')
       els.game.classList.remove("hiddent"),
       els.lobby.classList.add("hidden")
     }
