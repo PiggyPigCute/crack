@@ -5,7 +5,7 @@ body {
 }
 
 .hidden {
-    background-color: #555;
+    display: none;
 }
 
 h1 {
