@@ -16,6 +16,8 @@ const defaultSettings = {
   nbrJokers: 0
 };
 
+const riverRevealSchedule = [0, 3, 4, 5]; // river cards revealed at turn 0, 1, 2, 3
+
 function newGame() {
   return {
     inGame: false,
@@ -34,7 +36,7 @@ function viewFor(role) {
       inGame: true,
       players: game.players,
       hand: role == -1 ? game.hands : game.hands[role],
-      river: game.river,
+      river: game.river.slice(0, riverRevealSchedule[game.turn]),
       tokens: game.tokens,
       settings: game.settings,
     }
@@ -109,6 +111,7 @@ io.on('connection', (socket) => {
       max: tokenMax,
       center: Array.from({length: tokenMax}, (_, i) => i + 1),                                     // tokens sitting in the middle of the table
       slots: Array.from({length: game.players.length}, () => Array(game.settings.handsPerPlayer).fill(null)), // token id in front of each hand, or null
+      history: Array.from({length: game.players.length}, () => Array.from({length: game.settings.handsPerPlayer}, () => [])), // tokens recorded in front of each hand, turn after turn
     }
 
     // construction du deck
@@ -192,6 +195,31 @@ io.on('connection', (socket) => {
         }
       }
     }
+
+    spreadState();
+  });
+
+  socket.on('nextTurn', () => {
+    if (!game.inGame) return;                                      // only during a game
+    if (role != 0) return;                                         // must be admin (role 0)
+    if (game.tokens.center.length > 0) return;                     // every token must have been placed
+    if (game.turn >= riverRevealSchedule.length - 1) return;        // already on the last turn
+
+    // record the tokens currently placed in front of hands, and clear the slots
+    for (let p = 0; p < game.tokens.slots.length; p++) {
+      for (let h = 0; h < game.tokens.slots[p].length; h++) {
+        const token = game.tokens.slots[p][h];
+        if (token != null) {
+          game.tokens.history[p][h].push(token);
+          game.tokens.slots[p][h] = null;
+        }
+      }
+    }
+
+    // a fresh batch of tokens goes back to the center for the new turn
+    game.tokens.center = Array.from({length: game.tokens.max}, (_, i) => i + 1);
+
+    game.turn++;
 
     spreadState();
   });

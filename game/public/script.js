@@ -11,7 +11,9 @@ els = {
   settingsPanel: document.getElementById('settings-panel'),
   myHands: document.getElementById('my-hands'),
   opponentsRow: document.getElementById('opponents-row'),
-  centerTokens: document.getElementById('center-tokens')
+  centerTokens: document.getElementById('center-tokens'),
+  nextTurnContainer: document.getElementById('next-turn-container'),
+  river: document.getElementById('river')
 }
 
 const suitClasses = {
@@ -20,6 +22,46 @@ const suitClasses = {
   '♠': 'suit-spade',
   '♣': 'suit-club',
 };
+
+function createCardEl(card) {
+  const cardDiv = document.createElement('div');
+  cardDiv.className = 'card';
+
+  if (card.suit) {
+    cardDiv.classList.add(suitClasses[card.suit]);
+
+    const valueEl = document.createElement('span');
+    valueEl.className = 'card-value';
+    valueEl.textContent = card.value;
+    cardDiv.appendChild(valueEl);
+
+    const suitEl = document.createElement('span');
+    suitEl.className = 'card-suit';
+    suitEl.textContent = card.suit;
+    cardDiv.appendChild(suitEl);
+  } else {
+    cardDiv.classList.add('joker');
+    cardDiv.title = 'Joker';
+
+    const starEl = document.createElement('div');
+    starEl.className = 'joker-star';
+    cardDiv.appendChild(starEl);
+  }
+
+  return cardDiv;
+}
+
+function createRecordedTokenEl(token) {
+  const el = document.createElement('div');
+  el.className = 'token-recorded';
+  el.textContent = token;
+  return el;
+}
+
+function renderRiver(river) {
+  els.river.innerHTML = '';
+  river.forEach(card => els.river.appendChild(createCardEl(card)));
+}
 
 function renderHands(hands, tokens) {
   els.myHands.innerHTML = '';
@@ -41,33 +83,18 @@ function renderHands(hands, tokens) {
     const handDiv = document.createElement('div');
     handDiv.className = 'hand';
 
-    hand.forEach(card => {
-      const cardDiv = document.createElement('div');
-      cardDiv.className = 'card';
+    const recorded = tokens.history[myRole][handIndex];
+    if (recorded.length > 0) {
+      const tokensRow = document.createElement('div');
+      tokensRow.className = 'hand-tokens';
+      recorded.forEach(recordedToken => tokensRow.appendChild(createRecordedTokenEl(recordedToken)));
+      handDiv.appendChild(tokensRow);
+    }
 
-      if (card.suit) {
-        cardDiv.classList.add(suitClasses[card.suit]);
-
-        const valueEl = document.createElement('span');
-        valueEl.className = 'card-value';
-        valueEl.textContent = card.value;
-        cardDiv.appendChild(valueEl);
-
-        const suitEl = document.createElement('span');
-        suitEl.className = 'card-suit';
-        suitEl.textContent = card.suit;
-        cardDiv.appendChild(suitEl);
-      } else {
-        cardDiv.classList.add('joker');
-        cardDiv.title = 'Joker';
-
-        const starEl = document.createElement('div');
-        starEl.className = 'joker-star';
-        cardDiv.appendChild(starEl);
-      }
-
-      handDiv.appendChild(cardDiv);
-    });
+    const cardsRow = document.createElement('div');
+    cardsRow.className = 'hand-cards';
+    hand.forEach(card => cardsRow.appendChild(createCardEl(card)));
+    handDiv.appendChild(cardsRow);
 
     groupDiv.appendChild(handDiv);
     els.myHands.appendChild(groupDiv);
@@ -162,6 +189,21 @@ function renderOpponents(players, tokens) {
     nameEl.textContent = player.name;
     opponentDiv.appendChild(nameEl);
 
+    const recordedByHand = tokens.history[playerIndex];
+    if (recordedByHand.some(recorded => recorded.length > 0)) {
+      const tokensRow = document.createElement('div');
+      tokensRow.className = 'opponent-tokens';
+
+      recordedByHand.forEach(recorded => {
+        const cell = document.createElement('div');
+        cell.className = 'opponent-hand-tokens';
+        recorded.forEach(token => cell.appendChild(createRecordedTokenEl(token)));
+        tokensRow.appendChild(cell);
+      });
+
+      opponentDiv.appendChild(tokensRow);
+    }
+
     const slotsDiv = document.createElement('div');
     slotsDiv.className = 'opponent-slots';
 
@@ -229,11 +271,23 @@ function renderSettingsPanel(settings, isAdmin) {
 
   if (isAdmin) {
     const btnStart = document.createElement('div');
-    btnStart.className = 'btn-start-game';
+    btnStart.className = 'btn-primary';
     btnStart.textContent = 'Jouer !';
     btnStart.onclick = () => socket.emit('startGame');
     els.settingsPanel.appendChild(btnStart);
   }
+}
+
+function renderNextTurnButton(isAdmin, tokens, river) {
+  els.nextTurnContainer.innerHTML = '';
+  if (!isAdmin) return;
+
+  const btn = document.createElement('button');
+  btn.className = 'btn-primary';
+  btn.textContent = 'Tour suivant';
+  btn.disabled = tokens.center.length > 0 || river.length >= 5;
+  btn.onclick = () => socket.emit('nextTurn');
+  els.nextTurnContainer.appendChild(btn);
 }
 
 socket.on('role', (role) => {
@@ -255,7 +309,10 @@ socket.on('gameState', (view) => {
         renderOpponents(view.players, view.tokens);
         renderCenterTokens(view.tokens);
       });
+      renderNextTurnButton(myRole == 0, view.tokens, view.river);
     }
+
+    renderRiver(view.river);
   } else {
     els.lobby.classList.remove("hidden");
     els.game.classList.add("hidden");
