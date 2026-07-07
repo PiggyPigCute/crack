@@ -84,35 +84,10 @@ io.on('connection', (socket) => {
   // Envoie l'état initial (filtré) juste à ce client
   socket.emit('gameState', viewFor(role));
 
-  // --- Action : piocher une carte ---
-  socket.on('piocherCarte', () => {
-    // TOUJOURS revalider côté serveur, ne jamais faire confiance au client
-    if (role !== game.tour) return; // ce n'est pas son tour
-    if (game.deck.length === 0) return;
-
-    const carte = game.deck.pop();
-    game.mains[role].push(carte);
-    game.log.push(`${role} pioche une carte.`);
-    spreadState();
-  });
-
-  // --- Action : jouer une carte de sa main ---
-  socket.on('jouerCarte', (carte) => {
-    if (role !== game.tour) return;
-
-    const main = game.mains[role];
-    const index = main.indexOf(carte);
-    if (index === -1) return; // le joueur n'a pas cette carte, on ignore
-
-    main.splice(index, 1);
-    game.defausse.push(carte);
-    game.log.push(`${role} joue la carte ${carte}.`);
-
-    // On passe le tour à l'autre joueur
-    game.tour = game.tour === 'joueur1' ? 'joueur2' : 'joueur1';
-
-    spreadState();
-  });
+  socket.on('changeName', (newName) => {
+    game.players[role].name = newName;
+    spreadState()
+  })
 
   // --- Redémarrer la game (pratique pour tester) ---
   socket.on('newGame', () => {

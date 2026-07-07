@@ -1,32 +1,45 @@
 const socket = io();
 let myRole = null;
 
+els = {
+  lobby: document.getElementById('lobby'),
+  game: document.getElementById('game'),
+  role: document.getElementById('role'),
+  tour: document.getElementById('tour'),
+  playersList: document.getElementById('players-list'),
+  btnNewGame: document.getElementById('btn-new-game'),
+  btnChangeName: document.getElementById('btn-change-name'),
+  inputName: document.getElementById('input-name')
+}
+
 socket.on('role', (role) => {
   myRole = role;
-  document.getElementById('role').textContent = role;
+  els.role.textContent = role;
 });
 
 socket.on('gameState', (view) => {
 
   // Indicateur de tour
-  const tourEl = document.getElementById('tour');
-  tourEl.textContent = view.inGame;
-  tourEl.classList.toggle('mon-tour', view.inGame);
+  els.tour.textContent = view.inGame;
+  els.tour.classList.toggle('mon-tour', view.inGame);
 
   // Ma main (uniquement si je suis joueur)
   if (myRole >= 0) {
-    const mainEl = document.getElementById('main-joueur');
-    mainEl.innerHTML = '';
+    playersList.innerHTML = '';
     view.players.forEach((player, role) => {
       const div = document.createElement('div');
       div.className = 'carte';
-      div.textContent = role, player.name;
-      mainEl.appendChild(div);
+      div.textContent = player.name + ' ' + role;
+      playersList.appendChild(div);
     });
   }
 });
 
-document.getElementById('btn-new-game').onclick = () => {
+btnChangeName.onclick = () => {
+  socket.emit('changeName', inputName);
+};
+
+btnNewGame.onclick = () => {
   socket.emit('newGame');
 };
 
