@@ -88,11 +88,14 @@ io.on('connection', (socket) => {
   spreadState();
 
   socket.on('changeName', (newName) => {
+    const role = roles.get(socket.id); // roles.get, not the stale closure value: this socket's role may have shifted since it connected
+    if (!game.players[role]) return;
     game.players[role].name = newName;
     spreadState()
   })
 
   socket.on('updateSetting', ({ key, value } = {}) => {
+    const role = roles.get(socket.id);
     if (role != 0) return;                                        // must be admin (role 0)
     if (game.inGame) return;                                       // can't change settings during a game
     if (!Object.prototype.hasOwnProperty.call(defaultSettings, key)) return;
@@ -104,6 +107,7 @@ io.on('connection', (socket) => {
 
   socket.on('startGame', () => {
     console.log("Stating new game")
+    const role = roles.get(socket.id);
 
     if (game.inGame) return;  // can't start a game during a game
     if (role != 0) return;    // must be admin (role 0) to start game
@@ -156,6 +160,7 @@ io.on('connection', (socket) => {
   })
 
   socket.on('moveToken', ({ token, to } = {}) => {
+    const role = roles.get(socket.id);
     if (!game.inGame) return;                                          // tokens only move during a game
     if (game.revealed) return;                                         // hands are already revealed, tokens are frozen
     if (role < 0) return;                                              // spectators can't move tokens
@@ -205,6 +210,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('nextTurn', () => {
+    const role = roles.get(socket.id);
     if (!game.inGame) return;                                      // only during a game
     if (role != 0) return;                                         // must be admin (role 0)
     if (game.tokens.center.length > 0) return;                     // every token must have been placed
@@ -230,6 +236,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('revealHands', () => {
+    const role = roles.get(socket.id);
     if (!game.inGame) return;                                      // only during a game
     if (role != 0) return;                                         // must be admin (role 0)
     if (game.revealed) return;                                     // already revealed
@@ -242,6 +249,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('backToLobby', () => {
+    const role = roles.get(socket.id);
     if (!game.inGame) return;                                      // only from an active game
     if (role != 0) return;                                         // must be admin (role 0)
     if (!game.revealed) return;                                    // only from the reveal screen
