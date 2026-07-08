@@ -107,18 +107,8 @@ h2, h3 {
     color: var(--ink-soft);
 }
 
-.role-line {
-    margin: auto 0 18px;
-    font-size: 14px;
-    color: var(--ink-soft);
-}
-
-#role {
-    font-weight: bold;
-    color: var(--green);
-}
-
 .name-form {
+    margin-top: auto;
     display: flex;
     gap: 8px;
     width: 100%;

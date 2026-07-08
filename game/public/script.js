@@ -6,6 +6,7 @@ els = {
   game: document.getElementById('game'),
   playersList: document.getElementById('players-list'),
   btnChangeName: document.getElementById('btn-change-name'),
+  nameFormBottom: document.getElementById('name-form-bottom'),
   inputName: document.getElementById('input-name'),
   settingsPanel: document.getElementById('settings-panel'),
   myHands: document.getElementById('my-hands'),
@@ -500,6 +501,9 @@ socket.on('gameState', (view) => {
         els.playersList.appendChild(div);
       }
     });
+
+    // "Votre nom actul est "
+    els.nameFormBottom.innerHTML = 'Votre nom actuel est ' + view.players[myRole].name
   }
 });
 
