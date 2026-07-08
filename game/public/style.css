@@ -727,6 +727,7 @@ button:disabled {
     #my-hands {
         flex-wrap: nowrap;
         gap: 10px;
+        margin-bottom: auto;
     }
 
     .hand-group {
