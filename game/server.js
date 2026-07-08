@@ -10,6 +10,8 @@ const cardValues = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K',
 const cardSuits = ['♠', '♥', '♦', '♣'];
 const joker = '★'
 
+const names = ['Adam', 'Adolphe', 'Adrien', 'Alexandre', 'Antoine', 'Arthur', 'Augustin', 'Aurélien', 'Baptiste', 'Benoît', 'Cédric', 'Claude', 'Charles', 'Denis', 'Émile', 'Émilien', 'François', 'Gabriel', 'Gauthier', 'Georges', 'Guillaume', 'Gustave', 'Henri', 'Hugo', 'Jean', 'Jérémie', 'Julien', 'Jules', 'Laurent', 'Léon', 'Louis', 'Lucas', 'Matthieu', 'Maxime', 'Nicolas', 'Olivier', 'Patrick', 'Paul', 'Pierre', 'Quentin', 'Raphaël', 'Sébastien', 'Simon', 'Stéphane', 'Théo', 'Thibault', 'Thimothée', 'Thomas', 'Valentin', 'Vivien', 'Adèle', 'Agathe', 'Alexia', 'Alice', 'Aliénor', 'Amélie', 'Anne', 'Arianne', 'Aude', 'Aurélie', 'Bérangère', 'Camille', 'Candice', 'Capucine', 'Caroline', 'Charlotte', 'Chloé', 'Doriane', 'Dorothée', 'Élisabeth', 'Émilie', 'Emma', 'Estelle', 'Faustine', 'Hélène', 'Jade', 'Jeanne', 'Julie', 'Juliette', 'Laure', 'Laura', 'Léa', 'Louise', 'Lucie', 'Margaux', 'Margueritte', 'Marianne', 'Marine', 'Mathilde', 'Marie', 'Maud', 'Morgane', 'Murielle', 'Myriam', 'Pauline', 'Romane', 'Roxane', 'Salomé', 'Valérie', 'Victoire']
+
 const defaultSettings = {
   cardsPerHand: 3,
   handsPerPlayer: 2,
@@ -23,16 +25,13 @@ const minSettings = {
 
 const riverRevealSchedule = [0, 3, 4, 5];
 
-function newGame() {
-  return {
-    inGame: false,
-    players: [],
-    disconnectedPlayers: [],
-    settings: { ...defaultSettings }
-  }
-}
-
-let game = newGame();
+// initialize game
+let game = {
+  inGame: false,
+  players: [],
+  disconnectedPlayers: [],
+  settings: { ...defaultSettings }
+};
 const roles = new Map();
 
 function viewFor(role) {
@@ -74,7 +73,7 @@ io.on('connection', (socket) => {
     } else {
       role = game.players.length;
       game.players.push({
-        name: "Joueur·euse " + role
+        name: name + role
       })
     }
   } else {
@@ -103,38 +102,11 @@ io.on('connection', (socket) => {
     spreadState();
   });
 
-  socket.on('newGame', () => {
-    game = newGame();
-    spreadState();
-  });
-
   socket.on('startGame', () => {
     console.log("Stating new game")
 
     if (game.inGame) return;  // can't start a game during a game
     if (role != 0) return;    // must be admin (role 0) to start game
-
-    // drop currently disconnected players and compact the remaining roles so there's no gap
-    if (game.disconnectedPlayers.length > 0) {
-      const oldToNew = new Map();
-      const newPlayers = [];
-      game.players.forEach((player, oldRole) => {
-        if (game.disconnectedPlayers.includes(oldRole)) return;
-        oldToNew.set(oldRole, newPlayers.length);
-        newPlayers.push(player);
-      });
-      game.players = newPlayers;
-      game.disconnectedPlayers = [];
-
-      for (const [socketId, r] of roles.entries()) {
-        if (r < 0 || !oldToNew.has(r)) continue;
-        const newRole = oldToNew.get(r);
-        if (newRole != r) {
-          roles.set(socketId, newRole);
-          io.to(socketId).emit('role', newRole);
-        }
-      }
-    }
 
     // tokens
     const tokenMax = game.players.length * game.settings.handsPerPlayer
@@ -271,10 +243,24 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     const r = roles.get(socket.id);
-    if (r >= 0) { // not a spectator
-      game.disconnectedPlayers.push(r)
-    }
     roles.delete(socket.id);
+
+    if (r >= 0) { // not a spectator
+      if (game.inGame) {
+        game.disconnectedPlayers.push(r)
+      } else {
+        // lobby: drop the player immediately and shift every later role down to fill the gap
+        game.players.splice(r, 1);
+        for (const [socketId, otherRole] of roles.entries()) {
+          if (otherRole > r) {
+            const newRole = otherRole - 1;
+            roles.set(socketId, newRole);
+            io.to(socketId).emit('role', newRole);
+          }
+        }
+      }
+    }
+
     console.log(`Déconnexion ${socket.id} (${r})`);
     spreadState();
   });
