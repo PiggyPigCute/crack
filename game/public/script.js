@@ -367,7 +367,7 @@ function renderReveal(view) {
 }
 
 const settingsMeta = [
-  { key: 'cardsPerHand', label: 'Cartes par main', min: 2 },
+  { key: 'cardsPerHand', label: 'Cartes par main', min: 1 },
   { key: 'handsPerPlayer', label: 'Mains par joueur·euse', min: 1 },
   { key: 'nbrJokers', label: 'Nombre de jokers', min: 0 },
 ];
@@ -476,11 +476,18 @@ socket.on('gameState', (view) => {
 
     // player list
     els.playersList.innerHTML = '';
-    view.players.forEach((player) => {
-      const div = document.createElement('div');
-      div.className = 'player-tag';
-      div.textContent = player.name;
-      els.playersList.appendChild(div);
+    const youDiv = document.createElement('div');
+    youDiv.className = 'player-tag';
+    youDiv.textContent = view.players[myRole].name + ' (Vous)';
+    els.playersList.appendChild(youDiv);
+
+    view.players.forEach((player, playerRole) => {
+      if (playerRole != myRole) {
+        const div = document.createElement('div');
+        div.className = 'player-tag';
+        div.textContent = player.name;
+        els.playersList.appendChild(div);
+      }
     });
   }
 });
