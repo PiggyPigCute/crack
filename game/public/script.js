@@ -793,6 +793,3 @@ els.btnChangeName.onclick = submitNameChange;
 els.inputName.onkeydown = (e) => {
   if (e.key === 'Enter') submitNameChange();
 };
-
-/* DEBUG afac */
-window.debugGame = () => fetch('/debug').then(r => r.json()).then(g => { window.game = g; console.log(g); return g; });

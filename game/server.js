@@ -330,11 +330,6 @@ io.on('connection', (socket) => {
   });
 });
 
-/* DEBUG afac */
-app.get('/debug', (req, res) => {
-  res.json(game);
-});
-
 const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {
   console.log(`Serveur lancé sur http://localhost:${PORT}`);
