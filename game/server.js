@@ -41,10 +41,11 @@ function viewFor(role) {
       inGame: true,
       players: game.players,
       disconnectedPlayers: game.disconnectedPlayers,
-      hand: role == -1 ? game.hands : game.hands[role],
+      hand: (role == -1 || game.revealed) ? game.hands : game.hands[role],
       river: game.river.slice(0, riverRevealSchedule[game.turn]),
       tokens: game.tokens,
       turn: game.turn,
+      revealed: game.revealed,
       settings: game.settings,
     }
   } else { // in lobby
@@ -177,12 +178,14 @@ io.on('connection', (socket) => {
     // initialize game
     game.inGame = true
     game.turn = 0
+    game.revealed = false
 
     spreadState();
   })
 
   socket.on('moveToken', ({ token, to } = {}) => {
     if (!game.inGame) return;                                          // tokens only move during a game
+    if (game.revealed) return;                                         // hands are already revealed, tokens are frozen
     if (role < 0) return;                                              // spectators can't move tokens
     const tokens = game.tokens;
     if (!tokens) return;
@@ -250,6 +253,18 @@ io.on('connection', (socket) => {
     game.tokens.center = Array.from({length: game.tokens.max}, (_, i) => i + 1);
 
     game.turn++;
+
+    spreadState();
+  });
+
+  socket.on('revealHands', () => {
+    if (!game.inGame) return;                                      // only during a game
+    if (role != 0) return;                                         // must be admin (role 0)
+    if (game.revealed) return;                                     // already revealed
+    if (game.turn != riverRevealSchedule.length - 1) return;        // only on the last turn
+    if (game.tokens.center.length > 0) return;                     // every token must have been placed
+
+    game.revealed = true;
 
     spreadState();
   });

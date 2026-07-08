@@ -13,7 +13,10 @@ els = {
   opponentsRow: document.getElementById('opponents-row'),
   centerTokens: document.getElementById('center-tokens'),
   nextTurnContainer: document.getElementById('next-turn-container'),
-  river: document.getElementById('river')
+  river: document.getElementById('river'),
+  reveal: document.getElementById('reveal'),
+  revealBlocks: document.getElementById('reveal-blocks'),
+  revealRiver: document.getElementById('reveal-river')
 }
 
 const suitClasses = {
@@ -70,9 +73,9 @@ function createRecordedTokenEl(entry) {
   return el;
 }
 
-function renderRiver(river) {
-  els.river.innerHTML = '';
-  river.forEach(card => els.river.appendChild(createCardEl(card)));
+function renderRiver(container, river) {
+  container.innerHTML = '';
+  river.forEach(card => container.appendChild(createCardEl(card)));
 }
 
 function renderHands(hands, tokens, turn) {
@@ -309,6 +312,60 @@ function renderOpponents(players, tokens, disconnectedPlayers, turn) {
   });
 }
 
+// third screen, after 'lobby' and 'game': every hand revealed, sorted by its turn-4 (circle) token
+function renderReveal(view) {
+  els.revealBlocks.innerHTML = '';
+
+  const lastTurn = shapeClasses.length - 1; // circle
+
+  const blocks = [];
+  view.hand.forEach((playerHands, playerIndex) => {
+    playerHands.forEach((hand, handIndex) => {
+      blocks.push({
+        player: view.players[playerIndex],
+        hand,
+        history: view.tokens.history[playerIndex][handIndex],
+        finalToken: view.tokens.slots[playerIndex][handIndex], // turn-4 token, still sitting in its slot since it's never recorded to history
+      });
+    });
+  });
+  blocks.sort((a, b) => a.finalToken - b.finalToken);
+
+  blocks.forEach(block => {
+    const blockDiv = document.createElement('div');
+    blockDiv.className = 'reveal-block';
+
+    const infoDiv = document.createElement('div');
+    infoDiv.className = 'reveal-info';
+
+    const nameEl = document.createElement('div');
+    nameEl.className = 'reveal-name';
+    nameEl.textContent = block.player.name;
+    infoDiv.appendChild(nameEl);
+
+    const historyEl = document.createElement('div');
+    historyEl.className = 'reveal-history';
+    block.history.forEach(entry => historyEl.appendChild(createRecordedTokenEl(entry)));
+    infoDiv.appendChild(historyEl);
+
+    blockDiv.appendChild(infoDiv);
+
+    const finalTokenWrap = document.createElement('div');
+    finalTokenWrap.className = 'reveal-final-token';
+    finalTokenWrap.appendChild(getTokenEl(block.finalToken, lastTurn));
+    blockDiv.appendChild(finalTokenWrap);
+
+    const cardsRow = document.createElement('div');
+    cardsRow.className = 'hand-cards reveal-cards';
+    block.hand.forEach(card => cardsRow.appendChild(createCardEl(card)));
+    blockDiv.appendChild(cardsRow);
+
+    els.revealBlocks.appendChild(blockDiv);
+  });
+
+  renderRiver(els.revealRiver, view.river);
+}
+
 const settingsMeta = [
   { key: 'cardsPerHand', label: 'Cartes par main', min: 2 },
   { key: 'handsPerPlayer', label: 'Mains par joueur·euse', min: 1 },
@@ -363,15 +420,17 @@ function renderSettingsPanel(settings, isAdmin) {
   }
 }
 
-function renderNextTurnButton(isAdmin, tokens, river) {
+function renderNextTurnButton(isAdmin, tokens, turn) {
   els.nextTurnContainer.innerHTML = '';
   if (!isAdmin) return;
 
+  const isLastTurn = turn >= shapeClasses.length - 1; // circle turn: no more turns after this one, only the reveal
+
   const btn = document.createElement('button');
   btn.className = 'btn-primary';
-  btn.textContent = 'Tour suivant';
-  btn.disabled = tokens.center.length > 0 || river.length >= 5;
-  btn.onclick = () => socket.emit('nextTurn');
+  btn.textContent = isLastTurn ? 'Révéler les jeux' : 'Tour suivant';
+  btn.disabled = tokens.center.length > 0;
+  btn.onclick = () => socket.emit(isLastTurn ? 'revealHands' : 'nextTurn');
   els.nextTurnContainer.appendChild(btn);
 }
 
@@ -383,7 +442,17 @@ socket.on('role', (role) => {
 socket.on('gameState', (view) => {
 
   console.log(view);
-  
+
+  if (view.revealed) {
+    els.reveal.classList.remove("hidden");
+    els.lobby.classList.add("hidden");
+    els.game.classList.add("hidden");
+
+    renderReveal(view);
+    return;
+  }
+  els.reveal.classList.add("hidden");
+
   if (view.inGame) {
     els.game.classList.remove("hidden");
     els.lobby.classList.add("hidden");
@@ -394,10 +463,10 @@ socket.on('gameState', (view) => {
         renderOpponents(view.players, view.tokens, view.disconnectedPlayers, view.turn);
         renderCenterTokens(view.tokens, view.turn);
       });
-      renderNextTurnButton(myRole == 0, view.tokens, view.river);
+      renderNextTurnButton(myRole == 0, view.tokens, view.turn);
     }
 
-    renderRiver(view.river);
+    renderRiver(els.river, view.river);
   } else {
     els.lobby.classList.remove("hidden");
     els.game.classList.add("hidden");
