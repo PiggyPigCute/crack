@@ -141,6 +141,8 @@ function searchStraight(values, nbrJokers) {
 }
 
 function computePoker(cards) {
+  console.log("Computing poker hand...")
+
   let nbrJokers = 0;
   let suits = {};
   let values = {};
