@@ -631,7 +631,7 @@ button:disabled {
 }
 
 .reveal-cards {
-    flex-wrap: wrap;
+    min-width: 0;
 }
 
 #reveal-river {
