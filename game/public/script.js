@@ -23,7 +23,7 @@ els = {
 const cardValues = ['A','K','Q','J','10','9','8','7','6','5','4','3','2'];
 const cardSuits = ['♠', '♥', '♦', '♣'];
 const joker = '★'
-const pokerTypes = ['jokers','sf','four','full','flush','straight', 'three', 'twopair', 'pair','high']
+const pokerTypes = ['jokers','five','sf','four','full','flush','straight', 'three', 'twopair', 'pair','high']
 
 const suitClasses = {
   '♥': 'suit-heart',
@@ -73,6 +73,7 @@ function comparePokers(poker1, poker2) {
     if (poker1.type == type && poker2.type == type) {
       switch (type) {
         case 'jokers': return 0
+        case 'five': return compareValues(poker1.five,poker2.five);
         case 'sf': return compareValues(poker1.top,poker2.top);
         case 'four':
           cmp = compareValues(poker1.four,poker2.four);
@@ -157,6 +158,13 @@ function computePoker(cards) {
   // high card
   let poker = {type:'high', kicker:computeKicker(values, 5)};
   let newPoker;
+
+  // five
+  for (const v of cardValues) {
+    if (values[v] + nbrJokers >= 5) {
+      return {type:'five', five:v}
+    }
+  }
 
   // straight flushs (and flush)
   cardSuits.forEach(s => {
@@ -246,7 +254,8 @@ function computePoker(cards) {
 
 function displayPoker(poker) {
   switch (poker.type) {
-    case 'jokers': return "<strong>Abus Absolu"
+    case 'jokers': return "<strong>Abus Absolu</strong>";
+    case 'five': return "<strong>Pentagone de " + poker.five + '</strong>';
     case 'sf': return "<strong>Quinte Flush à " + poker.top + poker.suit + "</strong>";
     case 'four': return "<strong>Carré de " + poker.four + "</strong>, puis " + poker.kicker[0];
     case 'full': return "<strong>Full aux " + poker.three + " par les " + poker.pair + "</strong>";
