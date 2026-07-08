@@ -41,11 +41,7 @@ function randomName() {
 }
 
 function viewFor(socketId, role) {
-  // a spectator (including someone who just left the reveal screen) doesn't watch the
-  // reveal of a game they're not part of anymore — they see the lobby instead
-  const showGameView = game.inGame && !(game.revealed && role < 0);
-
-  if (showGameView) {
+  if (game.inGame) {
     return {
       inGame: true,
       players: game.players,
@@ -67,36 +63,6 @@ function viewFor(socketId, role) {
       settings: game.settings
     }
   }
-}
-
-// removes the player at `targetRole` from game.players, shifting every later role down by
-// one; any socket currently holding that role becomes a spectator (role -1)
-function detachPlayer(targetRole) {
-  game.players.splice(targetRole, 1);
-  for (const [socketId, otherRole] of roles.entries()) {
-    if (otherRole == targetRole) {
-      roles.set(socketId, -1);
-      io.to(socketId).emit('role', -1);
-    } else if (otherRole > targetRole) {
-      const newRole = otherRole - 1;
-      roles.set(socketId, newRole);
-      io.to(socketId).emit('role', newRole);
-    }
-  }
-}
-
-// once nobody is left actively attached to a finished (revealed) game, fully reset it so a
-// new one can be started; also sweeps away any player who disconnected mid-game and never
-// came back, since nobody remains who could still be viewing their reveal slot
-function resetIfGameEmpty() {
-  if (!game.revealed) return;
-  for (const role of roles.values()) {
-    if (role >= 0) return; // someone is still an active player of this game
-  }
-  game.players = [];
-  game.disconnectedPlayers = [];
-  game.inGame = false;
-  game.revealed = false;
 }
 
 // Envoie à CHAQUE client sa propre vue filtrée (pas un broadcast unique)
@@ -327,18 +293,53 @@ io.on('connection', (socket) => {
   socket.on('makeSpectator', (targetRole) => {
     const role = roles.get(socket.id);
     if (role != 0 && role != targetRole) return;                    // admin can target anyone, others only themselves
-    if (game.inGame && !game.revealed) return;                      // lobby, or the reveal screen of a finished game
+    if (game.inGame) return;                                        // lobby only
     if (!Number.isInteger(targetRole) || !game.players[targetRole]) return;
 
     const removedPlayer = game.players[targetRole];
-    let targetSocketId = null;
+    game.players.splice(targetRole, 1);
     for (const [socketId, otherRole] of roles.entries()) {
-      if (otherRole == targetRole) targetSocketId = socketId;
+      if (otherRole == targetRole) {
+        spectators.set(socketId, { name: removedPlayer.name });
+        roles.set(socketId, -1);
+        io.to(socketId).emit('role', -1);
+      } else if (otherRole > targetRole) {
+        const newRole = otherRole - 1;
+        roles.set(socketId, newRole);
+        io.to(socketId).emit('role', newRole);
+      }
     }
 
-    detachPlayer(targetRole);
-    if (targetSocketId) spectators.set(targetSocketId, { name: removedPlayer.name });
-    resetIfGameEmpty();
+    spreadState();
+  });
+
+  socket.on('backToLobby', () => {
+    const role = roles.get(socket.id);
+    if (!game.inGame) return;                                      // only from an active game
+    if (role != 0) return;                                         // must be admin (role 0)
+    if (!game.revealed) return;                                    // only from the reveal screen
+
+    // drop players who disconnected mid-game and never reconnected, compacting the roles that remain
+    const oldToNew = new Map();
+    const newPlayers = [];
+    game.players.forEach((player, oldRole) => {
+      if (game.disconnectedPlayers.includes(oldRole)) return;
+      oldToNew.set(oldRole, newPlayers.length);
+      newPlayers.push(player);
+    });
+    game.players = newPlayers;
+    game.disconnectedPlayers = [];
+
+    for (const [socketId, r] of roles.entries()) {
+      if (r < 0) continue; // spectators stay spectators; they can join back in via 'joinGame'
+      const newRole = oldToNew.get(r);
+      if (newRole != r) {
+        roles.set(socketId, newRole);
+        io.to(socketId).emit('role', newRole);
+      }
+    }
+
+    game.inGame = false;
 
     spreadState();
   });
@@ -349,15 +350,18 @@ io.on('connection', (socket) => {
     spectators.delete(socket.id);
 
     if (r >= 0) { // not a spectator
-      if (game.inGame && !game.revealed) {
-        game.disconnectedPlayers.push(r) // mid-game: keep the seat, they can reconnect into it
-      } else if (game.inGame) {
-        // reveal screen: disconnecting (e.g. a page reload) counts as leaving to spectator
-        detachPlayer(r);
-        resetIfGameEmpty();
+      if (game.inGame) {
+        game.disconnectedPlayers.push(r)
       } else {
         // lobby: drop the player immediately and shift every later role down to fill the gap
-        detachPlayer(r);
+        game.players.splice(r, 1);
+        for (const [socketId, otherRole] of roles.entries()) {
+          if (otherRole > r) {
+            const newRole = otherRole - 1;
+            roles.set(socketId, newRole);
+            io.to(socketId).emit('role', newRole);
+          }
+        }
       }
     }
 
