@@ -97,8 +97,7 @@ function advanceToNextTurn() {
 
 io.on('connection', (socket) => {
   // --- Attribution du rôle à la connexion ---
-  // par défaut, on arrive en spectateur (y compris dans le lobby) ; il faut
-  // explicitement "rejoindre la partie" pour devenir joueur
+  // par défaut, on arrive en spectateur (y compris dans le lobby) ; il faut explicitement "rejoindre la partie" pour devenir joueur
   let role;
   if (game.disconnectedPlayers.length == 0) {
     role = -1 // spectateur

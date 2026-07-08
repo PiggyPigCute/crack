@@ -769,7 +769,7 @@ socket.on('gameState', (view) => {
     // Settings panel (+ start button for admin)
     renderSettingsPanel(view.settings, isAdmin);
 
-    // "Rejoindre la partie" / "Devenir spectateur": mutually exclusive
+    // "Rejoindre la partie" / "Quitter la partie": mutually exclusive
     els.btnJoinGame.classList.toggle('hidden', !isSpectator);
     els.btnBecomeSpectator.classList.toggle('hidden', isSpectator);
 
