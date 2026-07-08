@@ -9,6 +9,7 @@ app.use(express.static('public'));
 const cardValues = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
 const cardSuits = ['♠', '♥', '♦', '♣'];
 const joker = '★'
+const deskSize = 52
 
 const names = ['Adam', 'Adolphe', 'Adrien', 'Alexandre', 'Antoine', 'Arthur', 'Augustin', 'Aurélien', 'Baptiste', 'Benoît', 'Cédric', 'Claude', 'Charles', 'Denis', 'Émile', 'Émilien', 'François', 'Gabriel', 'Gauthier', 'Georges', 'Guillaume', 'Gustave', 'Henri', 'Hugo', 'Jean', 'Jérémie', 'Julien', 'Jules', 'Laurent', 'Léon', 'Louis', 'Lucas', 'Matthieu', 'Maxime', 'Nicolas', 'Olivier', 'Patrick', 'Paul', 'Pierre', 'Quentin', 'Raphaël', 'Sébastien', 'Simon', 'Stéphane', 'Théo', 'Thibault', 'Thimothée', 'Thomas', 'Valentin', 'Vivien', 'Adèle', 'Agathe', 'Alexia', 'Alice', 'Aliénor', 'Amélie', 'Anne', 'Arianne', 'Aude', 'Aurélie', 'Bérangère', 'Camille', 'Candice', 'Capucine', 'Caroline', 'Charlotte', 'Chloé', 'Doriane', 'Dorothée', 'Élisabeth', 'Émilie', 'Emma', 'Estelle', 'Faustine', 'Hélène', 'Jade', 'Jeanne', 'Julie', 'Juliette', 'Laure', 'Laura', 'Léa', 'Louise', 'Lucie', 'Margaux', 'Margueritte', 'Marianne', 'Marine', 'Mathilde', 'Marie', 'Maud', 'Morgane', 'Murielle', 'Myriam', 'Pauline', 'Romane', 'Roxane', 'Salomé', 'Valérie', 'Victoire']
 
@@ -109,8 +110,10 @@ io.on('connection', (socket) => {
     console.log("Stating new game")
     const role = roles.get(socket.id);
 
+    // verifications
     if (game.inGame) return;  // can't start a game during a game
     if (role != 0) return;    // must be admin (role 0) to start game
+    if (game.settings.cardsPerHand * game.settings.handsPerPlayer * game.players.length > deskSize + game.settings.nbrJokers) return;
 
     // tokens
     const tokenMax = game.players.length * game.settings.handsPerPlayer
