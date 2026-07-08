@@ -360,7 +360,6 @@ button:disabled {
     width: clamp(38px, 13vw, 44px);
     height: clamp(38px, 13vw, 44px);
     border: 2px dashed var(--card-border);
-    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -389,7 +388,6 @@ button:disabled {
     justify-content: center;
     background: linear-gradient(160deg, #5a3d24, #3a2814);
     border: 1px solid #2a1c0f;
-    border-radius: 8px;
     color: #f3dfb8;
     font-size: clamp(13px, 4.5vw, 16px);
     font-weight: bold;
@@ -409,6 +407,28 @@ button:disabled {
     pointer-events: none;
     transform: scale(1.08);
     box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
+}
+
+/* token/slot shape changes turn after turn: square, pentagon, heptagon, circle */
+
+.shape-square {
+    border-radius: 8px;
+    clip-path: none;
+}
+
+.shape-circle {
+    border-radius: 50%;
+    clip-path: none;
+}
+
+.shape-pentagon {
+    border-radius: 0;
+    clip-path: polygon(50% 0%, 98% 35%, 79% 90%, 21% 90%, 2% 35%);
+}
+
+.shape-heptagon {
+    border-radius: 0;
+    clip-path: polygon(50% 0%, 89% 19%, 99% 61%, 72% 95%, 28% 95%, 1% 61%, 11% 19%);
 }
 
 .hand {
@@ -442,7 +462,6 @@ button:disabled {
     justify-content: center;
     background: linear-gradient(160deg, #5a3d24, #3a2814);
     border: 1px solid #2a1c0f;
-    border-radius: 6px;
     color: #f3dfb8;
     font-size: clamp(9px, 2.8vw, 11px);
     font-weight: bold;

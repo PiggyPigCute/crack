@@ -44,6 +44,7 @@ function viewFor(role) {
       hand: role == -1 ? game.hands : game.hands[role],
       river: game.river.slice(0, riverRevealSchedule[game.turn]),
       tokens: game.tokens,
+      turn: game.turn,
       settings: game.settings,
     }
   } else { // in lobby
@@ -239,7 +240,7 @@ io.on('connection', (socket) => {
       for (let h = 0; h < game.tokens.slots[p].length; h++) {
         const token = game.tokens.slots[p][h];
         if (token != null) {
-          game.tokens.history[p][h].push(token);
+          game.tokens.history[p][h].push({ token, turn: game.turn }); // shape of a recorded token depends on the turn it was placed
           game.tokens.slots[p][h] = null;
         }
       }

@@ -51,10 +51,22 @@ function createCardEl(card) {
   return cardDiv;
 }
 
-function createRecordedTokenEl(token) {
+const shapeClasses = ['shape-square', 'shape-pentagon', 'shape-heptagon', 'shape-circle'];
+
+function shapeClassForTurn(turn) {
+  return shapeClasses[Math.min(turn, shapeClasses.length - 1)];
+}
+
+function setShape(el, turn) {
+  el.classList.remove(...shapeClasses);
+  el.classList.add(shapeClassForTurn(turn));
+}
+
+function createRecordedTokenEl(entry) {
   const el = document.createElement('div');
   el.className = 'token-recorded';
-  el.textContent = token;
+  el.textContent = entry.token;
+  setShape(el, entry.turn);
   return el;
 }
 
@@ -63,7 +75,7 @@ function renderRiver(river) {
   river.forEach(card => els.river.appendChild(createCardEl(card)));
 }
 
-function renderHands(hands, tokens) {
+function renderHands(hands, tokens, turn) {
   els.myHands.innerHTML = '';
 
   hands.forEach((hand, handIndex) => {
@@ -71,12 +83,12 @@ function renderHands(hands, tokens) {
     groupDiv.className = 'hand-group';
 
     const slotEl = document.createElement('div');
-    slotEl.className = 'token-slot hand-token-slot';
+    slotEl.className = 'token-slot hand-token-slot'; // wide landing zone, shape doesn't apply to it
     makeDropTarget(slotEl, { player: myRole, hand: handIndex });
 
     const token = tokens.slots[myRole][handIndex];
     if (token != null) {
-      slotEl.appendChild(getTokenEl(token));
+      slotEl.appendChild(getTokenEl(token, turn));
     }
     groupDiv.appendChild(slotEl);
 
@@ -87,7 +99,7 @@ function renderHands(hands, tokens) {
     if (recorded.length > 0) {
       const tokensRow = document.createElement('div');
       tokensRow.className = 'hand-tokens';
-      recorded.forEach(recordedToken => tokensRow.appendChild(createRecordedTokenEl(recordedToken)));
+      recorded.forEach(entry => tokensRow.appendChild(createRecordedTokenEl(entry)));
       handDiv.appendChild(tokensRow);
     }
 
@@ -104,7 +116,7 @@ function renderHands(hands, tokens) {
 const tokenEls = new Map(); // token id -> persistent DOM element, so moves can be animated instead of recreated
 const dropTargets = new WeakMap(); // element -> `to` value passed to the 'moveToken' socket event
 
-function getTokenEl(token) {
+function getTokenEl(token, turn) {
   let tokenEl = tokenEls.get(token);
   if (!tokenEl) {
     tokenEl = document.createElement('div');
@@ -118,6 +130,7 @@ function getTokenEl(token) {
     tokenEl.addEventListener('touchstart', (e) => startTokenTouchDrag(e, tokenEl, token), { passive: false });
     tokenEls.set(token, tokenEl);
   }
+  setShape(tokenEl, turn);
   return tokenEl;
 }
 
@@ -228,22 +241,23 @@ function startTokenTouchDrag(e, tokenEl, token) {
 
 makeDropTarget(els.centerTokens, 'center');
 
-function renderCenterTokens(tokens) {
+function renderCenterTokens(tokens, turn) {
   els.centerTokens.innerHTML = '';
 
   for (let token = 1; token <= tokens.max; token++) {
     const slotEl = document.createElement('div');
     slotEl.className = 'token-slot';
+    setShape(slotEl, turn);
 
     if (tokens.center.includes(token)) {
-      slotEl.appendChild(getTokenEl(token));
+      slotEl.appendChild(getTokenEl(token, turn));
     }
 
     els.centerTokens.appendChild(slotEl);
   }
 }
 
-function renderOpponents(players, tokens, disconnectedPlayers) {
+function renderOpponents(players, tokens, disconnectedPlayers, turn) {
   els.opponentsRow.innerHTML = '';
 
   players.forEach((player, playerIndex) => {
@@ -273,16 +287,17 @@ function renderOpponents(players, tokens, disconnectedPlayers) {
       if (recorded.length > 0) {
         const tokensEl = document.createElement('div');
         tokensEl.className = 'opponent-hand-tokens';
-        recorded.forEach(recordedToken => tokensEl.appendChild(createRecordedTokenEl(recordedToken)));
+        recorded.forEach(entry => tokensEl.appendChild(createRecordedTokenEl(entry)));
         handDiv.appendChild(tokensEl);
       }
 
       const slotEl = document.createElement('div');
       slotEl.className = 'token-slot';
+      setShape(slotEl, turn);
       makeDropTarget(slotEl, { player: playerIndex, hand });
 
       if (token != null) {
-        slotEl.appendChild(getTokenEl(token));
+        slotEl.appendChild(getTokenEl(token, turn));
       }
       handDiv.appendChild(slotEl);
 
@@ -375,9 +390,9 @@ socket.on('gameState', (view) => {
 
     if (view.tokens) {
       animateTokens(() => {
-        if (myRole >= 0) renderHands(view.hand, view.tokens);
-        renderOpponents(view.players, view.tokens, view.disconnectedPlayers);
-        renderCenterTokens(view.tokens);
+        if (myRole >= 0) renderHands(view.hand, view.tokens, view.turn);
+        renderOpponents(view.players, view.tokens, view.disconnectedPlayers, view.turn);
+        renderCenterTokens(view.tokens, view.turn);
       });
       renderNextTurnButton(myRole == 0, view.tokens, view.river);
     }
