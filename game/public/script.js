@@ -693,7 +693,7 @@ function renderSettingsPanel(settings, isAdmin) {
   if (isAdmin) {
     const btnStart = document.createElement('div');
     btnStart.className = 'btn-primary';
-    btnStart.textContent = 'Jouer !';
+    btnStart.textContent = 'Lancer la partie !';
     btnStart.onclick = () => socket.emit('startGame');
     els.settingsPanel.appendChild(btnStart);
   }
