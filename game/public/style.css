@@ -756,6 +756,7 @@ button:disabled {
     #river {
         gap: 4px;
         padding: 8px;
+        margin-bottom: 15px;
     }
 
     #reveal {
