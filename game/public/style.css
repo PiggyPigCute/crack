@@ -670,6 +670,12 @@ button:disabled {
     flex-shrink: 0;
 }
 
+.reveal-final-token-error .token {
+    background: linear-gradient(160deg, #8a2c1e, #5c1a10);
+    border-color: #3a1109;
+    color: #f8d9cf;
+}
+
 .reveal-cards {
     min-width: 0;
 }

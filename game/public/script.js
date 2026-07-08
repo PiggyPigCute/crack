@@ -570,6 +570,7 @@ function renderReveal(view) {
       blocks.push({
         player: view.players[playerIndex],
         hand,
+        poker: computePoker([...hand, ...view.river]),
         history: view.tokens.history[playerIndex][handIndex],
         finalToken: view.tokens.slots[playerIndex][handIndex],
       });
@@ -577,7 +578,12 @@ function renderReveal(view) {
   });
   blocks.sort((a, b) => a.finalToken - b.finalToken);
 
-  blocks.forEach(block => {
+  blocks.forEach((block, index) => {
+    const previousBlock = blocks[index - 1];
+    const nextBlock = blocks[index + 1];
+    const isMisranked = (previousBlock && comparePokers(block.poker, previousBlock.poker) == 2)
+      || (nextBlock && comparePokers(block.poker, nextBlock.poker) == 1);
+
     const blockDiv = document.createElement('div');
     blockDiv.className = 'reveal-block';
 
@@ -601,6 +607,7 @@ function renderReveal(view) {
 
     const finalTokenWrap = document.createElement('div');
     finalTokenWrap.className = 'reveal-final-token';
+    if (isMisranked) finalTokenWrap.classList.add('reveal-final-token-error');
     finalTokenWrap.appendChild(getTokenEl(block.finalToken, lastTurn));
     mainRow.appendChild(finalTokenWrap);
 
@@ -613,7 +620,7 @@ function renderReveal(view) {
 
     const pokerEl = document.createElement('div');
     pokerEl.className = 'reveal-poker';
-    pokerEl.innerHTML = displayPoker(computePoker([...block.hand, ...view.river]));
+    pokerEl.innerHTML = displayPoker(block.poker);
     blockDiv.appendChild(pokerEl);
 
     els.revealBlocks.appendChild(blockDiv);
