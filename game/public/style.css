@@ -130,6 +130,10 @@ h2, h3 {
     outline: 2px solid var(--gold-light);
 }
 
+#name-form-bottom {
+    font-size: 10px;
+}
+
 /* ---------- Buttons ---------- */
 
 button {
