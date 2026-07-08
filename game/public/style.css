@@ -190,7 +190,8 @@ button:disabled {
 
 /* ---------- Players list ---------- */
 
-#players-list {
+#players-list,
+#spectators-list {
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -209,7 +210,8 @@ button:disabled {
     background: #f5efe0;
 }
 
-#players-list .player-tag {
+#players-list .player-tag,
+#spectators-list .player-tag {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -743,13 +745,15 @@ button:disabled {
         font-size: 44px;
     }
 
-    #players-list {
+    #players-list,
+    #spectators-list {
         flex-direction: row;
         flex-wrap: wrap;
         gap: 6px;
     }
 
-    #players-list .player-tag {
+    #players-list .player-tag,
+    #spectators-list .player-tag {
         padding: 6px 10px;
         font-size: 13px;
     }

@@ -34,8 +34,13 @@ let game = {
   settings: { ...defaultSettings }
 };
 const roles = new Map();
+const spectators = new Map(); // socket.id -> { name }, for connexions not (yet) attached to a player slot
 
-function viewFor(role) {
+function randomName() {
+  return names[Math.floor(Math.random() * names.length)];
+}
+
+function viewFor(socketId, role) {
   if (game.inGame) {
     return {
       inGame: true,
@@ -54,6 +59,7 @@ function viewFor(role) {
       inGame: false,
       players: game.players,
       disconnectedPlayers: game.disconnectedPlayers,
+      spectators: [...spectators.entries()].map(([id, s]) => ({ name: s.name, isSelf: id == socketId })),
       settings: game.settings
     }
   }
@@ -62,7 +68,7 @@ function viewFor(role) {
 // Envoie à CHAQUE client sa propre vue filtrée (pas un broadcast unique)
 function spreadState() {
   for (const [socketId, role] of roles.entries()) {
-    io.to(socketId).emit('gameState', viewFor(role));
+    io.to(socketId).emit('gameState', viewFor(socketId, role));
   }
 }
 
@@ -101,6 +107,9 @@ io.on('connection', (socket) => {
   }
 
   roles.set(socket.id, role);
+  if (role == -1) {
+    spectators.set(socket.id, { name: randomName() });
+  }
   socket.emit('role', role);
   console.log(`Connexion ${socket.id} -> ${role}`);
 
@@ -112,10 +121,12 @@ io.on('connection', (socket) => {
     if (game.inGame) return;   // lobby only
     if (role != -1) return;    // already a player
 
+    const spectator = spectators.get(socket.id);
     const newRole = game.players.length;
     game.players.push({
-      name: names[Math.floor(Math.random() * names.length)]
+      name: spectator ? spectator.name : randomName()
     });
+    spectators.delete(socket.id);
     roles.set(socket.id, newRole);
     socket.emit('role', newRole);
 
@@ -124,8 +135,14 @@ io.on('connection', (socket) => {
 
   socket.on('changeName', (newName) => {
     const role = roles.get(socket.id); // roles.get, not the stale closure value: this socket's role may have shifted since it connected
-    if (!game.players[role]) return;
-    game.players[role].name = newName;
+    if (role >= 0) {
+      if (!game.players[role]) return;
+      game.players[role].name = newName;
+    } else {
+      const spectator = spectators.get(socket.id);
+      if (!spectator) return;
+      spectator.name = newName;
+    }
     spreadState()
   })
 
@@ -280,9 +297,11 @@ io.on('connection', (socket) => {
     if (game.inGame) return;                                        // lobby only
     if (!Number.isInteger(targetRole) || !game.players[targetRole]) return;
 
+    const removedPlayer = game.players[targetRole];
     game.players.splice(targetRole, 1);
     for (const [socketId, otherRole] of roles.entries()) {
       if (otherRole == targetRole) {
+        spectators.set(socketId, { name: removedPlayer.name });
         roles.set(socketId, -1);
         io.to(socketId).emit('role', -1);
       } else if (otherRole > targetRole) {
@@ -329,6 +348,7 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     const r = roles.get(socket.id);
     roles.delete(socket.id);
+    spectators.delete(socket.id);
 
     if (r >= 0) { // not a spectator
       if (game.inGame) {

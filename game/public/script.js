@@ -5,8 +5,8 @@ els = {
   lobby: document.getElementById('lobby'),
   game: document.getElementById('game'),
   playersList: document.getElementById('players-list'),
+  spectatorsList: document.getElementById('spectators-list'),
   btnJoinGame: document.getElementById('btn-join-game'),
-  nameForm: document.getElementById('name-form'),
   btnChangeName: document.getElementById('btn-change-name'),
   nameFormBottom: document.getElementById('name-form-bottom'),
   inputName: document.getElementById('input-name'),
@@ -768,42 +768,51 @@ socket.on('gameState', (view) => {
     // Settings panel (+ start button for admin)
     renderSettingsPanel(view.settings, isAdmin);
 
-    // "Rejoindre la partie" button, name form: only meaningful once you're a player
+    // "Rejoindre la partie" button: only meaningful for spectators
     els.btnJoinGame.classList.toggle('hidden', !isSpectator);
-    els.nameForm.classList.toggle('hidden', isSpectator);
-    els.nameFormBottom.classList.toggle('hidden', isSpectator);
 
     // player list
     els.playersList.innerHTML = '';
 
-    const renderPlayerRow = (player, playerRole, isSelf) => {
+    const renderNameRow = (container, name, isSelf, onMakeSpectator) => {
       const div = document.createElement('div');
       div.className = 'player-tag';
 
       const nameSpan = document.createElement('span');
-      nameSpan.innerHTML = player.name + (isSelf ? ' <strong>(Vous)</strong>' : '');
+      nameSpan.innerHTML = name + (isSelf ? ' <strong>(Vous)</strong>' : '');
       div.appendChild(nameSpan);
 
-      if (isAdmin) {
+      if (onMakeSpectator) {
         const btnSpectator = document.createElement('button');
         btnSpectator.className = 'btn-make-spectator';
         btnSpectator.textContent = 'Spectateur';
-        btnSpectator.onclick = () => socket.emit('makeSpectator', playerRole);
+        btnSpectator.onclick = onMakeSpectator;
         div.appendChild(btnSpectator);
       }
 
-      els.playersList.appendChild(div);
+      container.appendChild(div);
     };
 
-    if (!isSpectator) renderPlayerRow(view.players[myRole], myRole, true);
+    if (!isSpectator) {
+      renderNameRow(els.playersList, view.players[myRole].name, true);
+    }
     view.players.forEach((player, playerRole) => {
-      if (playerRole != myRole) renderPlayerRow(player, playerRole, false);
+      if (playerRole != myRole) {
+        renderNameRow(els.playersList, player.name, false, isAdmin ? () => socket.emit('makeSpectator', playerRole) : null);
+      }
+    });
+
+    // spectator list
+    els.spectatorsList.innerHTML = '';
+    view.spectators.forEach(spectator => {
+      renderNameRow(els.spectatorsList, spectator.name, spectator.isSelf);
     });
 
     // "Votre nom actuel est "
-    if (!isSpectator) {
-      els.nameFormBottom.innerHTML = 'Votre nom actuel est ' + view.players[myRole].name
-    }
+    const myName = isSpectator
+      ? (view.spectators.find(s => s.isSelf) || {}).name
+      : view.players[myRole].name;
+    els.nameFormBottom.innerHTML = 'Votre nom actuel est ' + myName;
   }
 });
 
