@@ -210,10 +210,21 @@ button:disabled {
 }
 
 #players-list .player-tag {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
     text-align: left;
     font-size: 14px;
     padding: 8px 12px;
     cursor: default;
+}
+
+.btn-make-spectator {
+    padding: 4px 10px;
+    font-size: 12px;
+    line-height: 1;
+    flex-shrink: 0;
 }
 
 /* ---------- Settings panel ---------- */

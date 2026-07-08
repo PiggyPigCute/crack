@@ -765,18 +765,30 @@ socket.on('gameState', (view) => {
 
     // player list
     els.playersList.innerHTML = '';
-    const youDiv = document.createElement('div');
-    youDiv.className = 'player-tag';
-    youDiv.innerHTML = view.players[myRole].name + ' <strong>(Vous)</strong>';
-    els.playersList.appendChild(youDiv);
+    const isAdmin = myRole == 0;
 
-    view.players.forEach((player, playerRole) => {
-      if (playerRole != myRole) {
-        const div = document.createElement('div');
-        div.className = 'player-tag';
-        div.textContent = player.name;
-        els.playersList.appendChild(div);
+    const renderPlayerRow = (player, playerRole, isSelf) => {
+      const div = document.createElement('div');
+      div.className = 'player-tag';
+
+      const nameSpan = document.createElement('span');
+      nameSpan.innerHTML = player.name + (isSelf ? ' <strong>(Vous)</strong>' : '');
+      div.appendChild(nameSpan);
+
+      if (isAdmin) {
+        const btnSpectator = document.createElement('button');
+        btnSpectator.className = 'btn-make-spectator';
+        btnSpectator.textContent = 'Spectateur';
+        btnSpectator.onclick = () => socket.emit('makeSpectator', playerRole);
+        div.appendChild(btnSpectator);
       }
+
+      els.playersList.appendChild(div);
+    };
+
+    renderPlayerRow(view.players[myRole], myRole, true);
+    view.players.forEach((player, playerRole) => {
+      if (playerRole != myRole) renderPlayerRow(player, playerRole, false);
     });
 
     // "Votre nom actul est "

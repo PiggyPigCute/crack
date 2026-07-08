@@ -264,6 +264,27 @@ io.on('connection', (socket) => {
     spreadState();
   });
 
+  socket.on('makeSpectator', (targetRole) => {
+    const role = roles.get(socket.id);
+    if (role != 0) return;                                         // must be admin (role 0)
+    if (game.inGame) return;                                        // lobby only
+    if (!Number.isInteger(targetRole) || !game.players[targetRole]) return;
+
+    game.players.splice(targetRole, 1);
+    for (const [socketId, otherRole] of roles.entries()) {
+      if (otherRole == targetRole) {
+        roles.set(socketId, -1);
+        io.to(socketId).emit('role', -1);
+      } else if (otherRole > targetRole) {
+        const newRole = otherRole - 1;
+        roles.set(socketId, newRole);
+        io.to(socketId).emit('role', newRole);
+      }
+    }
+
+    spreadState();
+  });
+
   socket.on('backToLobby', () => {
     const role = roles.get(socket.id);
     if (!game.inGame) return;                                      // only from an active game
