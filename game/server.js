@@ -45,6 +45,7 @@ function viewFor(role) {
       river: game.river.slice(0, riverRevealSchedule[game.turn]),
       tokens: game.tokens,
       turn: game.turn,
+      ready: game.ready,
       revealed: game.revealed,
       settings: game.settings,
     }
@@ -63,6 +64,37 @@ function spreadState() {
   for (const [socketId, role] of roles.entries()) {
     io.to(socketId).emit('gameState', viewFor(role));
   }
+}
+
+function slotsFullFor(player) {
+  return game.tokens.slots[player].every(token => token != null);
+}
+
+// a player can only stay "ready" while every one of their slots is filled; called after
+// any token move since a move can empty a slot that was previously complete
+function clearStaleReady() {
+  for (let p = 0; p < game.ready.length; p++) {
+    if (!slotsFullFor(p)) game.ready[p] = false;
+  }
+}
+
+// record the tokens currently placed in front of hands, clear the slots, and start the next turn
+function advanceToNextTurn() {
+  for (let p = 0; p < game.tokens.slots.length; p++) {
+    for (let h = 0; h < game.tokens.slots[p].length; h++) {
+      const token = game.tokens.slots[p][h];
+      if (token != null) {
+        game.tokens.history[p][h].push({ token, turn: game.turn }); // shape of a recorded token depends on the turn it was placed
+        game.tokens.slots[p][h] = null;
+      }
+    }
+  }
+
+  // a fresh batch of tokens goes back to the center for the new turn
+  game.tokens.center = Array.from({length: game.tokens.max}, (_, i) => i + 1);
+
+  game.turn++;
+  game.ready = Array(game.players.length).fill(false);
 }
 
 io.on('connection', (socket) => {
@@ -158,6 +190,7 @@ io.on('connection', (socket) => {
     game.inGame = true
     game.turn = 0
     game.revealed = false
+    game.ready = Array(game.players.length).fill(false)
 
     spreadState();
   })
@@ -209,44 +242,26 @@ io.on('connection', (socket) => {
       }
     }
 
+    clearStaleReady();
     spreadState();
   });
 
-  socket.on('nextTurn', () => {
+  socket.on('toggleReady', () => {
     const role = roles.get(socket.id);
     if (!game.inGame) return;                                      // only during a game
-    if (role != 0) return;                                         // must be admin (role 0)
-    if (game.tokens.center.length > 0) return;                     // every token must have been placed
-    if (game.turn >= riverRevealSchedule.length - 1) return;        // already on the last turn
+    if (game.revealed) return;                                     // hands are already revealed
+    if (role < 0) return;                                          // spectators don't play
+    if (!slotsFullFor(role)) return;                                // can only toggle once every one of your slots is filled
 
-    // record the tokens currently placed in front of hands, and clear the slots
-    for (let p = 0; p < game.tokens.slots.length; p++) {
-      for (let h = 0; h < game.tokens.slots[p].length; h++) {
-        const token = game.tokens.slots[p][h];
-        if (token != null) {
-          game.tokens.history[p][h].push({ token, turn: game.turn }); // shape of a recorded token depends on the turn it was placed
-          game.tokens.slots[p][h] = null;
-        }
+    game.ready[role] = !game.ready[role];
+
+    if (game.ready.length > 0 && game.ready.every(r => r)) {
+      if (game.turn >= riverRevealSchedule.length - 1) {
+        game.revealed = true;
+      } else {
+        advanceToNextTurn();
       }
     }
-
-    // a fresh batch of tokens goes back to the center for the new turn
-    game.tokens.center = Array.from({length: game.tokens.max}, (_, i) => i + 1);
-
-    game.turn++;
-
-    spreadState();
-  });
-
-  socket.on('revealHands', () => {
-    const role = roles.get(socket.id);
-    if (!game.inGame) return;                                      // only during a game
-    if (role != 0) return;                                         // must be admin (role 0)
-    if (game.revealed) return;                                     // already revealed
-    if (game.turn != riverRevealSchedule.length - 1) return;        // only on the last turn
-    if (game.tokens.center.length > 0) return;                     // every token must have been placed
-
-    game.revealed = true;
 
     spreadState();
   });

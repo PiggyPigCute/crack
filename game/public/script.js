@@ -261,7 +261,7 @@ function renderCenterTokens(tokens, turn) {
   }
 }
 
-function renderOpponents(players, tokens, disconnectedPlayers, turn) {
+function renderOpponents(players, tokens, disconnectedPlayers, ready, turn) {
   els.opponentsRow.innerHTML = '';
 
   players.forEach((player, playerIndex) => {
@@ -270,14 +270,26 @@ function renderOpponents(players, tokens, disconnectedPlayers, turn) {
     const opponentDiv = document.createElement('div');
     opponentDiv.className = 'opponent';
 
-    const nameEl = document.createElement('div');
+    const nameRow = document.createElement('div');
+    nameRow.className = 'opponent-name-row';
+
+    const nameEl = document.createElement('span');
     if (disconnectedPlayers.includes(playerIndex)) {
       nameEl.className = 'disconnected-opponent-name'
     } else {
       nameEl.className = 'opponent-name';
     }
     nameEl.textContent = player.name;
-    opponentDiv.appendChild(nameEl);
+    nameRow.appendChild(nameEl);
+
+    if (ready[playerIndex]) {
+      const readyEl = document.createElement('span');
+      readyEl.className = 'ready-check';
+      readyEl.textContent = '✓';
+      nameRow.appendChild(readyEl);
+    }
+
+    opponentDiv.appendChild(nameRow);
 
     const recordedByHand = tokens.history[playerIndex];
     const handsDiv = document.createElement('div');
@@ -421,17 +433,18 @@ function renderSettingsPanel(settings, isAdmin) {
   }
 }
 
-function renderNextTurnButton(isAdmin, tokens, turn) {
+function renderOkButton(tokens, ready) {
   els.nextTurnContainer.innerHTML = '';
-  if (!isAdmin) return;
+  if (myRole < 0) return; // spectators don't play
 
-  const isLastTurn = turn >= shapeClasses.length - 1; // circle turn: no more turns after this one, only the reveal
+  const slotsFull = tokens.slots[myRole].every(token => token != null);
+  const isReady = !!ready[myRole];
 
   const btn = document.createElement('button');
-  btn.className = 'btn-primary';
-  btn.textContent = isLastTurn ? 'Révéler les jeux' : 'Tour suivant';
-  btn.disabled = tokens.center.length > 0;
-  btn.onclick = () => socket.emit(isLastTurn ? 'revealHands' : 'nextTurn');
+  btn.className = 'btn-primary' + (isReady ? ' is-ready' : '');
+  btn.textContent = isReady ? 'Ok ✓' : 'Ok';
+  btn.disabled = !slotsFull;
+  btn.onclick = () => socket.emit('toggleReady');
   els.nextTurnContainer.appendChild(btn);
 }
 
@@ -472,10 +485,10 @@ socket.on('gameState', (view) => {
     if (view.tokens) {
       animateTokens(() => {
         if (myRole >= 0) renderHands(view.hand, view.tokens, view.turn);
-        renderOpponents(view.players, view.tokens, view.disconnectedPlayers, view.turn);
+        renderOpponents(view.players, view.tokens, view.disconnectedPlayers, view.ready, view.turn);
         renderCenterTokens(view.tokens, view.turn);
       });
-      renderNextTurnButton(myRole == 0, view.tokens, view.turn);
+      renderOkButton(view.tokens, view.ready);
     }
 
     renderRiver(els.river, view.river);

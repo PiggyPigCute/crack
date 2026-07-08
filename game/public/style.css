@@ -178,6 +178,16 @@ button:disabled {
     box-shadow: 0 6px 18px rgba(184, 137, 43, 0.5);
 }
 
+.btn-primary.is-ready {
+    background: var(--green);
+    border-color: var(--green);
+    box-shadow: 0 4px 14px rgba(31, 94, 70, 0.4);
+}
+
+.btn-primary.is-ready:hover {
+    box-shadow: 0 6px 18px rgba(31, 94, 70, 0.5);
+}
+
 /* ---------- Players list ---------- */
 
 #players-list {
@@ -297,6 +307,12 @@ button:disabled {
     backdrop-filter: blur(6px);
 }
 
+.opponent-name-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
 .opponent-name {
     font-size: 13px;
     font-weight: bold;
@@ -306,6 +322,12 @@ button:disabled {
     font-size: 13px;
     font-style: oblique;
     color: red;
+}
+
+.ready-check {
+    font-size: 13px;
+    font-weight: bold;
+    color: var(--green);
 }
 
 .opponent-hands {
