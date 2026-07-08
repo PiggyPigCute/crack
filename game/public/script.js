@@ -753,7 +753,7 @@ socket.on('gameState', (view) => {
     els.playersList.innerHTML = '';
     const youDiv = document.createElement('div');
     youDiv.className = 'player-tag';
-    youDiv.textContent = view.players[myRole].name + ' <strong>(Vous)</strong>';
+    youDiv.innerHTML = view.players[myRole].name + ' <strong>(Vous)</strong>';
     els.playersList.appendChild(youDiv);
 
     view.players.forEach((player, playerRole) => {
