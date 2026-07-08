@@ -249,7 +249,6 @@ button:disabled {
     justify-content: center;
     flex-wrap: wrap;
     gap: 36px;
-    margin-bottom: auto;
 }
 
 .hand-group {
@@ -269,6 +268,7 @@ button:disabled {
     border-radius: 14px;
     box-shadow: 0 8px 20px rgba(43, 38, 32, 0.18);
     backdrop-filter: blur(6px);
+    margin-top: auto;
 }
 
 #river:empty {
