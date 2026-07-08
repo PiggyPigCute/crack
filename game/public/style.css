@@ -431,6 +431,57 @@ button:disabled {
     clip-path: polygon(50% 0%, 89% 19%, 99% 61%, 72% 95%, 28% 95%, 1% 61%, 11% 19%);
 }
 
+/* clip-path cuts the box down to the polygon, but the border is drawn on the
+   original rectangle first, so almost none of it survives the clip. Hide the
+   native border on these two shapes and redraw the outline as a mask that
+   traces the real polygon edges instead. */
+.shape-pentagon,
+.shape-heptagon {
+    border-color: transparent;
+    position: relative;
+}
+
+.shape-pentagon::after,
+.shape-heptagon::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-size: 100% 100%;
+    mask-size: 100% 100%;
+}
+
+.token-slot.shape-pentagon::after {
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' overflow='visible'%3E%3Cpolygon points='50,0 98,35 79,90 21,90 2,35' fill='none' stroke='white' stroke-width='4' stroke-dasharray='8 6'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' overflow='visible'%3E%3Cpolygon points='50,0 98,35 79,90 21,90 2,35' fill='none' stroke='white' stroke-width='4' stroke-dasharray='8 6'/%3E%3C/svg%3E");
+    background-color: var(--card-border);
+}
+
+.token-slot.shape-heptagon::after {
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' overflow='visible'%3E%3Cpolygon points='50,0 89,19 99,61 72,95 28,95 1,61 11,19' fill='none' stroke='white' stroke-width='4' stroke-dasharray='8 6'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' overflow='visible'%3E%3Cpolygon points='50,0 89,19 99,61 72,95 28,95 1,61 11,19' fill='none' stroke='white' stroke-width='4' stroke-dasharray='8 6'/%3E%3C/svg%3E");
+    background-color: var(--card-border);
+}
+
+.token-slot.shape-pentagon.drag-over::after,
+.token-slot.shape-heptagon.drag-over::after {
+    background-color: var(--gold);
+}
+
+.token.shape-pentagon::after {
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' overflow='visible'%3E%3Cpolygon points='50,0 98,35 79,90 21,90 2,35' fill='none' stroke='white' stroke-width='2.2'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' overflow='visible'%3E%3Cpolygon points='50,0 98,35 79,90 21,90 2,35' fill='none' stroke='white' stroke-width='2.2'/%3E%3C/svg%3E");
+    background-color: #2a1c0f;
+}
+
+.token.shape-heptagon::after {
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' overflow='visible'%3E%3Cpolygon points='50,0 89,19 99,61 72,95 28,95 1,61 11,19' fill='none' stroke='white' stroke-width='2.2'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' overflow='visible'%3E%3Cpolygon points='50,0 89,19 99,61 72,95 28,95 1,61 11,19' fill='none' stroke='white' stroke-width='2.2'/%3E%3C/svg%3E");
+    background-color: #2a1c0f;
+}
+
 .hand {
     display: flex;
     flex-direction: column;
