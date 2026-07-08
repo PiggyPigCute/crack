@@ -348,6 +348,7 @@ function renderHands(hands, tokens, turn, river) {
     const pokerText = document.createElement('div');
     pokerText.className = 'poker';
     pokerText.innerHTML = displayPoker(computePoker([...hand, ...river]))
+    handDiv.appendChild(pokerText)
 
     groupDiv.appendChild(handDiv);
     els.myHands.appendChild(groupDiv);
