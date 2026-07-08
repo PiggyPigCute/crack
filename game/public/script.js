@@ -613,7 +613,7 @@ function renderReveal(view) {
 
     const pokerEl = document.createElement('div');
     pokerEl.className = 'reveal-poker';
-    pokerEl.textContent = displayPoker(computePoker([...block.hand, ...view.river]));
+    pokerEl.innerHTML = displayPoker(computePoker([...block.hand, ...view.river]));
     blockDiv.appendChild(pokerEl);
 
     els.revealBlocks.appendChild(blockDiv);
