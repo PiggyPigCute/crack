@@ -4,7 +4,6 @@ let myRole = null;
 els = {
   lobby: document.getElementById('lobby'),
   game: document.getElementById('game'),
-  role: document.getElementById('role'),
   playersList: document.getElementById('players-list'),
   btnChangeName: document.getElementById('btn-change-name'),
   inputName: document.getElementById('input-name'),
@@ -436,7 +435,6 @@ function renderNextTurnButton(isAdmin, tokens, turn) {
 
 socket.on('role', (role) => {
   myRole = role;
-  els.role.textContent = role;
 });
 
 socket.on('gameState', (view) => {
