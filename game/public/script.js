@@ -312,7 +312,7 @@ function renderRiver(container, river) {
   river.forEach(card => container.appendChild(createCardEl(card)));
 }
 
-function renderHands(hands, tokens, turn) {
+function renderHands(hands, tokens, turn, river) {
   els.myHands.innerHTML = '';
 
   hands.forEach((hand, handIndex) => {
@@ -344,6 +344,10 @@ function renderHands(hands, tokens, turn) {
     cardsRow.className = 'hand-cards';
     hand.forEach(card => cardsRow.appendChild(createCardEl(card)));
     handDiv.appendChild(cardsRow);
+
+    const pokerText = document.createElement('div');
+    pokerText.className = 'poker';
+    pokerText.innerHTML = displayPoker(computePoker([...hand, ...river]))
 
     groupDiv.appendChild(handDiv);
     els.myHands.appendChild(groupDiv);
@@ -619,7 +623,7 @@ function renderReveal(view) {
     blockDiv.appendChild(mainRow);
 
     const pokerEl = document.createElement('div');
-    pokerEl.className = 'reveal-poker';
+    pokerEl.className = 'poker';
     pokerEl.innerHTML = displayPoker(block.poker);
     blockDiv.appendChild(pokerEl);
 
@@ -734,7 +738,7 @@ socket.on('gameState', (view) => {
 
     if (view.tokens) {
       animateTokens(() => {
-        if (myRole >= 0) renderHands(view.hand, view.tokens, view.turn);
+        if (myRole >= 0) renderHands(view.hand, view.tokens, view.turn, view.river);
         renderOpponents(view.players, view.tokens, view.disconnectedPlayers, view.ready, view.turn);
         renderCenterTokens(view.tokens, view.turn);
       });

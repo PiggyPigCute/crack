@@ -641,7 +641,7 @@ button:disabled {
     gap: 14px;
 }
 
-.reveal-poker {
+.poker {
     font-size: 12px;
     color: var(--ink);
     opacity: 0.8;
