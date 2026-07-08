@@ -7,6 +7,7 @@ els = {
   playersList: document.getElementById('players-list'),
   spectatorsList: document.getElementById('spectators-list'),
   btnJoinGame: document.getElementById('btn-join-game'),
+  btnBecomeSpectator: document.getElementById('btn-become-spectator'),
   btnChangeName: document.getElementById('btn-change-name'),
   nameFormBottom: document.getElementById('name-form-bottom'),
   inputName: document.getElementById('input-name'),
@@ -768,8 +769,9 @@ socket.on('gameState', (view) => {
     // Settings panel (+ start button for admin)
     renderSettingsPanel(view.settings, isAdmin);
 
-    // "Rejoindre la partie" button: only meaningful for spectators
+    // "Rejoindre la partie" / "Devenir spectateur": mutually exclusive
     els.btnJoinGame.classList.toggle('hidden', !isSpectator);
+    els.btnBecomeSpectator.classList.toggle('hidden', isSpectator);
 
     // player list
     els.playersList.innerHTML = '';
@@ -827,3 +829,4 @@ els.inputName.onkeydown = (e) => {
 };
 
 els.btnJoinGame.onclick = () => socket.emit('joinGame');
+els.btnBecomeSpectator.onclick = () => socket.emit('makeSpectator', myRole);

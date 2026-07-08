@@ -197,6 +197,25 @@ button:disabled {
     box-shadow: 0 6px 18px rgba(31, 94, 70, 0.5);
 }
 
+.btn-subtle {
+    margin-top: 18px;
+    padding: 6px 14px;
+    text-align: center;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    color: var(--ink-soft);
+    background: transparent;
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    box-shadow: none;
+}
+
+.btn-subtle:hover:not(:disabled) {
+    color: var(--ink);
+    background: rgba(184, 137, 43, 0.08);
+    box-shadow: none;
+}
+
 /* ---------- Players list ---------- */
 
 #players-list,
