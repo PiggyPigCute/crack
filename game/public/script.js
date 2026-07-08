@@ -734,8 +734,6 @@ socket.on('role', (role) => {
 
 socket.on('gameState', (view) => {
 
-  console.log(view);
-
   if (view.revealed) {
     els.reveal.classList.remove("hidden");
     els.lobby.classList.add("hidden");
