@@ -326,46 +326,62 @@ function renderRiver(container, river) {
   river.forEach(card => container.appendChild(createCardEl(card)));
 }
 
+// cards, recorded-token history and the poker readout only change when the turn advances
+// (more river cards get revealed, a new history entry gets recorded) — everything else
+// (the token currently sitting in the slot) can change on any gameState update, so that
+// part alone is refreshed outside of the turn-gated rebuild below.
+let lastHandsTurn = null;
+let handSlotEls = []; // handIndex -> persistent slot DOM element, valid while lastHandsTurn matches
+
 function renderHands(hands, tokens, turn, river) {
-  els.myHands.innerHTML = '';
+  if (turn !== lastHandsTurn || handSlotEls.length !== hands.length) {
+    els.myHands.innerHTML = '';
+    handSlotEls = [];
 
-  hands.forEach((hand, handIndex) => {
-    const groupDiv = document.createElement('div');
-    groupDiv.className = 'hand-group';
+    hands.forEach((hand, handIndex) => {
+      const groupDiv = document.createElement('div');
+      groupDiv.className = 'hand-group';
 
-    const slotEl = document.createElement('div');
-    slotEl.className = 'token-slot hand-token-slot'; // wide landing zone, shape doesn't apply to it
-    makeDropTarget(slotEl, { player: myRole, hand: handIndex });
+      const slotEl = document.createElement('div');
+      slotEl.className = 'token-slot hand-token-slot'; // wide landing zone, shape doesn't apply to it
+      makeDropTarget(slotEl, { player: myRole, hand: handIndex });
+      groupDiv.appendChild(slotEl);
+      handSlotEls.push(slotEl);
 
+      const handDiv = document.createElement('div');
+      handDiv.className = 'hand';
+
+      const recorded = tokens.history[myRole][handIndex];
+      if (recorded.length > 0) {
+        const tokensRow = document.createElement('div');
+        tokensRow.className = 'hand-tokens';
+        recorded.forEach(entry => tokensRow.appendChild(createRecordedTokenEl(entry)));
+        handDiv.appendChild(tokensRow);
+      }
+
+      const cardsRow = document.createElement('div');
+      cardsRow.className = 'hand-cards';
+      hand.forEach(card => cardsRow.appendChild(createCardEl(card)));
+      handDiv.appendChild(cardsRow);
+
+      const pokerText = document.createElement('div');
+      pokerText.className = 'poker';
+      pokerText.innerHTML = displayPoker(computePoker([...hand, ...river]))
+      handDiv.appendChild(pokerText)
+
+      groupDiv.appendChild(handDiv);
+      els.myHands.appendChild(groupDiv);
+    });
+
+    lastHandsTurn = turn;
+  }
+
+  handSlotEls.forEach((slotEl, handIndex) => {
+    slotEl.innerHTML = '';
     const token = tokens.slots[myRole][handIndex];
     if (token != null) {
       slotEl.appendChild(getTokenEl(token, turn));
     }
-    groupDiv.appendChild(slotEl);
-
-    const handDiv = document.createElement('div');
-    handDiv.className = 'hand';
-
-    const recorded = tokens.history[myRole][handIndex];
-    if (recorded.length > 0) {
-      const tokensRow = document.createElement('div');
-      tokensRow.className = 'hand-tokens';
-      recorded.forEach(entry => tokensRow.appendChild(createRecordedTokenEl(entry)));
-      handDiv.appendChild(tokensRow);
-    }
-
-    const cardsRow = document.createElement('div');
-    cardsRow.className = 'hand-cards';
-    hand.forEach(card => cardsRow.appendChild(createCardEl(card)));
-    handDiv.appendChild(cardsRow);
-
-    const pokerText = document.createElement('div');
-    pokerText.className = 'poker';
-    pokerText.innerHTML = displayPoker(computePoker([...hand, ...river]))
-    handDiv.appendChild(pokerText)
-
-    groupDiv.appendChild(handDiv);
-    els.myHands.appendChild(groupDiv);
   });
 }
 
