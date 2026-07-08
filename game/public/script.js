@@ -246,16 +246,16 @@ function computePoker(cards) {
 
 function displayPoker(poker) {
   switch (poker.type) {
-    case 'jokers': return "Abus Absolu"
-    case 'sf': return "Quinte Flush à " + poker.top + poker.suit;
-    case 'four': return "Carré de " + poker.four + ", puis " + poker.kicker[0];
-    case 'full': return "Full aux " + poker.three + " par les " + poker.pair;
-    case 'flush': return "Couleur à " + poker.suit + " avec " + poker.hand.join(', ');
-    case 'straight': return "Suite à " + poker.top
-    case 'three': return "Brelan de " + poker.three + ", puis " + poker.kicker.join(', ')
-    case 'twopair': return "Double paire " + poker.first + " et " + poker.second + ", puis " + poker.kicker[0];
-    case 'pair': return "Paire de " + poker.pair + ", puis " + poker.kicker.join(', ')
-    default: return "Carte haute " + poker.kicker.join(', ')
+    case 'jokers': return "<strong>Abus Absolu"
+    case 'sf': return "<strong>Quinte Flush à " + poker.top + poker.suit + "</strong>";
+    case 'four': return "<strong>Carré de " + poker.four + "</strong>, puis " + poker.kicker[0];
+    case 'full': return "<strong>Full aux " + poker.three + " par les " + poker.pair + "</strong>";
+    case 'flush': return "<strong>Couleur à " + poker.suit + "</strong> avec " + poker.hand.join(', ');
+    case 'straight': return "<strong>Suite au " + poker.top + "</strong>"
+    case 'three': return "<strong>Brelan de " + poker.three + "</strong>, puis " + poker.kicker.join(', ')
+    case 'twopair': return "<strong>Double paire " + poker.first + " et " + poker.second + "</strong>, puis " + poker.kicker[0];
+    case 'pair': return "<strong>Paire de " + poker.pair + "</strong>, puis " + poker.kicker.join(', ')
+    default: return "<strong>Carte haute " + poker.kicker[0] + "</strong>, " + poker.kicker.slice(1).join(', ')
   }
 }
 
@@ -746,7 +746,7 @@ socket.on('gameState', (view) => {
     els.playersList.innerHTML = '';
     const youDiv = document.createElement('div');
     youDiv.className = 'player-tag';
-    youDiv.textContent = view.players[myRole].name + ' (Vous)';
+    youDiv.textContent = view.players[myRole].name + ' <strong>(Vous)</strong>';
     els.playersList.appendChild(youDiv);
 
     view.players.forEach((player, playerRole) => {
