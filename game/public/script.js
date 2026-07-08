@@ -753,7 +753,7 @@ socket.on('gameState', (view) => {
       if (playerRole != myRole) {
         const div = document.createElement('div');
         div.className = 'player-tag';
-        div.innerHTML = player.name;
+        div.textContent = player.name;
         els.playersList.appendChild(div);
       }
     });
