@@ -73,7 +73,7 @@ io.on('connection', (socket) => {
     } else {
       role = game.players.length;
       game.players.push({
-        name: name + role
+        name: names[[Math.floor(Math.random() * names.length)]]
       })
     }
   } else {
