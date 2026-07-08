@@ -763,7 +763,10 @@ button:disabled {
     }
 
     #reveal-blocks {
-        columns: 1;
+        /* multi-column layout is unreliable across mobile browsers for variable-height
+           blocks; a plain flex column guarantees a strict single vertical stack */
+        display: flex;
+        flex-direction: column;
         flex: 1 1 auto;
         min-height: 0;
         max-height: none;
