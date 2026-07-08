@@ -20,12 +20,245 @@ els = {
   revealRiver: document.getElementById('reveal-river')
 }
 
+const cardValues = ['A','K','Q','J','10','9','8','7','6','5','4','3','2'];
+const cardSuits = ['♠', '♥', '♦', '♣'];
+const joker = '★'
+const pokerTypes = ['jokers','sf','four','full','flush','straight', 'three', 'twopair', 'pair','high']
+
 const suitClasses = {
   '♥': 'suit-heart',
   '♦': 'suit-diamond',
   '♠': 'suit-spade',
   '♣': 'suit-club',
 };
+
+// for all the following comaparaison fonctions
+// return 0 when equal hands
+//        1 when poker1 better than poker2
+//        2 when poker2 better than poker 1
+
+function compareValues(v1, v2) {
+  for (const v of cardValues) {
+    if (v1==v && v2==v) {
+      return 0
+    } else if (v1 == v) {
+      return 1
+    } else if (v2 == v) {
+      return 2
+    }
+  }
+}
+
+function compareKickers(k1, k2) {
+  let i1 = 0;
+  let i2 = 0;
+  for (const v of cardValues) {
+    if (k1[i1]==v && k2[i2]==v) {
+      i1 ++;
+      i2 ++;
+      if (i1 == k1.length || i2 == k2.length) {
+        return 0
+      }
+    } else if (k1[i1] == v) {
+      return 1
+    } else if (k2[i2] == v) {
+      return 2
+    }
+  }
+}
+
+function comparePokers(poker1, poker2) {
+  let cmp;
+  for (const type of pokerTypes) {
+    if (poker1.type == type && poker2.type == type) {
+      switch (type) {
+        case 'jokers': return 0
+        case 'sf': return compareValues(poker1.top,poker2.top);
+        case 'four':
+          cmp = compareValues(poker1.four,poker2.four);
+          return cmp ? cmp : compareKickers(poker1.kicker,poker2.kicker);
+        case 'full':
+          cmp = compareValues(poker1.three,poker2.three);
+          return cmp ? cmp : compareValues(poker1.pair,poker2.pair);
+        case 'flush':
+          return compareKickers(poker1.hand,poker2.hand);
+        case 'straight':
+          return compareValues(poker1.top,poker2.top);
+        case 'three':
+          cmp = compareValues(poker1.three,poker2.three);
+          return cmp ? cmp : compareKickers(poker1.kicker,poker2.kicker);
+        case 'twopair':
+          cmp = compareValues(poker1.first,poker2.first);
+          if (cmp) {
+            return cmp
+          } else {
+            let cmp = compareValues(poker1.second,poker2.second);
+            return cmp ? cmp : compareKickers(poker1.kicker,poker2.kicker);
+          };
+        case 'pair':
+          cmp = compareValues(poker1.pair,poker2.pair);
+          return cmp ? cmp : compareKickers(poker1.kicker,poker2.kicker);
+        default:
+          return compareKickers(poker1.kicker,poker2.kicker)
+      }
+    } else if (poker1.type == type) {
+      return 1
+    } else if (poker2.type == type) {
+      return 2
+    }
+  }
+}
+
+function computeKicker(values, size, without=[]) {
+  let result = [];
+  for (const v of cardValues) {
+    if (!without.includes(v)) {
+      if (values[v]>0) result.push(v);
+      if (result.length == size) return result;
+    }
+  }
+  return result
+}
+
+function searchStraight(values, nbrJokers) {
+  // if straight ? value : null
+  let count = ('A' in values) + ('K' in values) + ('Q' in values) + ('J' in values);
+  for (let i=0; i <= cardValues.length - 5; i++) {
+    count += (cardValues[i+4] in values);
+    if (count + nbrJokers >= 5) {
+      return cardValues[i]
+    }
+    count -= (cardValues[i] in values);
+  }
+  if (count + nbrJokers >= 4 && ('A' in values)) { // straige A2345
+    return '5'
+  }
+  return null // no straight
+}
+
+function computePoker(cards) {
+  let nbrJokers = 0;
+  let suits = {};
+  let values = {};
+  cards.forEach(c => {
+    if (c.suit) {
+      suits[c.suit] = 1 + suits[c.suit] || 1;
+      values[c.value] = 1 + values[c.value] || 1;
+    } else {
+      nbrJokers ++;
+    }
+  });
+
+  // 5 jokers
+  if (nbrJokers >= 5 || nbrJokers == cards.length) {
+    return {type:'jokers'}
+  }
+
+  // high card
+  let poker = {type:'high', kicker:computeKicker(values, 5)};
+  let newPoker;
+
+  // straight flushs (and flush)
+  cardSuits.forEach(s => {
+    if (suits[s] + nbrJokers >= 5) {
+      let flushValues = {};
+      cards.forEach(c => {
+        if (c.suit == s) {
+          flushValues[c.value] = 1 + flushValues[c.value] || 1;
+        }
+      });
+
+      let straightFlush = searchStraight(flushValues, nbrJokers);
+      if (straightFlush) {
+        newPoker = {type:'sf',top:straightFlush,suit:s};
+      } else {
+        let i = nbrJokers;
+        cardValues.forEach(v => {
+          if (i>0 && !flushValues[v]) {
+            i --;
+            flushValues[v] = 1;
+          }
+        });
+        newPoker = {type:'flush',suit:s,hand:computeKicker(flushValues,5)}
+      }
+      
+      if (comparePokers(poker,newPoker) == 2) {
+        poker = newPoker;
+      }
+    }
+  })
+  if (poker.type == 'sf') return poker;
+
+  // four
+  for (const v of cardValues) {
+    if (values[v] + nbrJokers >= 4) {
+      return {type:'four', four:v, kicker:computeKicker(values,1,[v])}
+    }
+  }
+
+  // full (and three)
+  for (const v of cardValues) {
+    if (values[v] + nbrJokers == 3) {
+      for (const w of cardValues) {
+        if (v != w && values[w] == 2) {
+          return {type:'full', three:v, pair:w}
+        }
+      }
+      newPoker = {type:'three', three:v, kicker:computeKicker(values,2,[v])}
+      if (comparePokers(poker,newPoker) == 2) {
+        poker = newPoker;
+      }
+    }
+  }
+
+  // flush
+  if (poker.type == 'flush') return poker;
+
+  // straight
+  let straight = searchStraight(values, nbrJokers);
+  if (straight) {
+    return {type:'straight', top:straight}
+  }
+
+  // three
+  if (poker.type == 'three') return poker;
+
+  // twopairs (and pairs)
+  let pair = null
+  for (const v of cardValues) {
+    if (values[v] + nbrJokers == 2) {
+      if (pair) {
+        if (nbrJokers == 0) {
+          return {type:'twopair', first:pair, second:v, kicker:computeKicker(values, 1, [pair,v])}
+        }
+      } else {
+        pair = v
+      }
+    }
+  }
+
+  // pairs
+  if (pair) return {type:'pair', pair:pair, kicker:computeKicker(values, 3, [pair])}
+
+  // high card
+  return poker
+}
+
+function displayPoker(poker) {
+  switch (poker.type) {
+    case 'jokers': return "Abus Absolu"
+    case 'sf': return "Quinte Flush à " + poker.top + poker.suit;
+    case 'four': return "Carré de " + poker.four + ", puis " + poker.kicker[0];
+    case 'full': return "Full aux " + poker.three + " par les " + poker.pair;
+    case 'flush': return "Couleur à " + poker.suit + " avec " + poker.hand.join(', ');
+    case 'straight': return "Suite à " + poker.top
+    case 'three': return "Brelan de " + poker.three + ", puis " + poker.kicker.join(', ')
+    case 'twopair': return "Double paire " + poker.first + " et " + poker.second + ", puis " + poker.kicker[0];
+    case 'pair': return "Paire de " + poker.pair + ", puis " + poker.kicker.join(', ')
+    default: return "Carte haute " + poker.kicker.join(', ')
+  }
+}
+
 
 function createCardEl(card) {
   const cardDiv = document.createElement('div');
@@ -338,7 +571,7 @@ function renderReveal(view) {
         player: view.players[playerIndex],
         hand,
         history: view.tokens.history[playerIndex][handIndex],
-        finalToken: view.tokens.slots[playerIndex][handIndex], // turn-4 token, still sitting in its slot since it's never recorded to history
+        finalToken: view.tokens.slots[playerIndex][handIndex],
       });
     });
   });
@@ -347,6 +580,9 @@ function renderReveal(view) {
   blocks.forEach(block => {
     const blockDiv = document.createElement('div');
     blockDiv.className = 'reveal-block';
+
+    const mainRow = document.createElement('div');
+    mainRow.className = 'reveal-block-main';
 
     const infoDiv = document.createElement('div');
     infoDiv.className = 'reveal-info';
@@ -361,17 +597,24 @@ function renderReveal(view) {
     block.history.forEach(entry => historyEl.appendChild(createRecordedTokenEl(entry)));
     infoDiv.appendChild(historyEl);
 
-    blockDiv.appendChild(infoDiv);
+    mainRow.appendChild(infoDiv);
 
     const finalTokenWrap = document.createElement('div');
     finalTokenWrap.className = 'reveal-final-token';
     finalTokenWrap.appendChild(getTokenEl(block.finalToken, lastTurn));
-    blockDiv.appendChild(finalTokenWrap);
+    mainRow.appendChild(finalTokenWrap);
 
     const cardsRow = document.createElement('div');
     cardsRow.className = 'hand-cards reveal-cards';
     block.hand.forEach(card => cardsRow.appendChild(createCardEl(card)));
-    blockDiv.appendChild(cardsRow);
+    mainRow.appendChild(cardsRow);
+
+    blockDiv.appendChild(mainRow);
+
+    const pokerEl = document.createElement('div');
+    pokerEl.className = 'reveal-poker';
+    pokerEl.textContent = displayPoker(computePoker([...block.hand, ...view.river]));
+    blockDiv.appendChild(pokerEl);
 
     els.revealBlocks.appendChild(blockDiv);
   });
