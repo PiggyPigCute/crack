@@ -733,14 +733,13 @@ function renderOkButton(tokens, ready) {
   els.nextTurnContainer.appendChild(btn);
 }
 
-function renderBackToLobbyButton(isAdmin) {
+function renderLeaveRevealButton() {
   els.revealLobbyContainer.innerHTML = '';
-  if (!isAdmin) return;
 
   const btn = document.createElement('button');
   btn.className = 'btn-primary';
-  btn.textContent = 'Lobby';
-  btn.onclick = () => socket.emit('backToLobby');
+  btn.textContent = 'Retour au lobby';
+  btn.onclick = () => socket.emit('makeSpectator', myRole);
   els.revealLobbyContainer.appendChild(btn);
 }
 
@@ -750,13 +749,15 @@ socket.on('role', (role) => {
 
 socket.on('gameState', (view) => {
 
+  // the server only sends `revealed: true` to sockets still actively part of that game;
+  // once you leave (this button, or reloading the page), you get the lobby view instead
   if (view.revealed) {
     els.reveal.classList.remove("hidden");
     els.lobby.classList.add("hidden");
     els.game.classList.add("hidden");
 
     renderReveal(view);
-    renderBackToLobbyButton(myRole == 0);
+    renderLeaveRevealButton();
     return;
   }
   els.reveal.classList.add("hidden");
