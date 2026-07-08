@@ -91,26 +91,36 @@ function advanceToNextTurn() {
 
 io.on('connection', (socket) => {
   // --- Attribution du rôle à la connexion ---
+  // par défaut, on arrive en spectateur (y compris dans le lobby) ; il faut
+  // explicitement "rejoindre la partie" pour devenir joueur
   let role;
   if (game.disconnectedPlayers.length == 0) {
-    if (game.inGame) {
-      role = -1 // specatateur
-    } else {
-      role = game.players.length;
-      game.players.push({
-        name: names[[Math.floor(Math.random() * names.length)]]
-      })
-    }
+    role = -1 // spectateur
   } else {
     role = game.disconnectedPlayers.pop()
   }
-  
+
   roles.set(socket.id, role);
   socket.emit('role', role);
   console.log(`Connexion ${socket.id} -> ${role}`);
 
   // Envoie l'état initial (filtré) juste à ce client
   spreadState();
+
+  socket.on('joinGame', () => {
+    const role = roles.get(socket.id);
+    if (game.inGame) return;   // lobby only
+    if (role != -1) return;    // already a player
+
+    const newRole = game.players.length;
+    game.players.push({
+      name: names[Math.floor(Math.random() * names.length)]
+    });
+    roles.set(socket.id, newRole);
+    socket.emit('role', newRole);
+
+    spreadState();
+  });
 
   socket.on('changeName', (newName) => {
     const role = roles.get(socket.id); // roles.get, not the stale closure value: this socket's role may have shifted since it connected
@@ -303,19 +313,9 @@ io.on('connection', (socket) => {
     game.disconnectedPlayers = [];
 
     for (const [socketId, r] of roles.entries()) {
-      if (r < 0) continue; // spectators are promoted below
+      if (r < 0) continue; // spectators stay spectators; they can join back in via 'joinGame'
       const newRole = oldToNew.get(r);
       if (newRole != r) {
-        roles.set(socketId, newRole);
-        io.to(socketId).emit('role', newRole);
-      }
-    }
-
-    // spectators become active players too
-    for (const [socketId, r] of roles.entries()) {
-      if (r == -1) {
-        const newRole = game.players.length;
-        game.players.push({ name: "Joueur·euse " + newRole });
         roles.set(socketId, newRole);
         io.to(socketId).emit('role', newRole);
       }

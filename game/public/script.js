@@ -5,6 +5,8 @@ els = {
   lobby: document.getElementById('lobby'),
   game: document.getElementById('game'),
   playersList: document.getElementById('players-list'),
+  btnJoinGame: document.getElementById('btn-join-game'),
+  nameForm: document.getElementById('name-form'),
   btnChangeName: document.getElementById('btn-change-name'),
   nameFormBottom: document.getElementById('name-form-bottom'),
   inputName: document.getElementById('input-name'),
@@ -760,12 +762,19 @@ socket.on('gameState', (view) => {
     els.lobby.classList.remove("hidden");
     els.game.classList.add("hidden");
 
+    const isAdmin = myRole == 0;
+    const isSpectator = myRole < 0;
+
     // Settings panel (+ start button for admin)
-    renderSettingsPanel(view.settings, myRole == 0);
+    renderSettingsPanel(view.settings, isAdmin);
+
+    // "Rejoindre la partie" button, name form: only meaningful once you're a player
+    els.btnJoinGame.classList.toggle('hidden', !isSpectator);
+    els.nameForm.classList.toggle('hidden', isSpectator);
+    els.nameFormBottom.classList.toggle('hidden', isSpectator);
 
     // player list
     els.playersList.innerHTML = '';
-    const isAdmin = myRole == 0;
 
     const renderPlayerRow = (player, playerRole, isSelf) => {
       const div = document.createElement('div');
@@ -786,13 +795,15 @@ socket.on('gameState', (view) => {
       els.playersList.appendChild(div);
     };
 
-    renderPlayerRow(view.players[myRole], myRole, true);
+    if (!isSpectator) renderPlayerRow(view.players[myRole], myRole, true);
     view.players.forEach((player, playerRole) => {
       if (playerRole != myRole) renderPlayerRow(player, playerRole, false);
     });
 
-    // "Votre nom actul est "
-    els.nameFormBottom.innerHTML = 'Votre nom actuel est ' + view.players[myRole].name
+    // "Votre nom actuel est "
+    if (!isSpectator) {
+      els.nameFormBottom.innerHTML = 'Votre nom actuel est ' + view.players[myRole].name
+    }
   }
 });
 
@@ -805,3 +816,5 @@ els.btnChangeName.onclick = submitNameChange;
 els.inputName.onkeydown = (e) => {
   if (e.key === 'Enter') submitNameChange();
 };
+
+els.btnJoinGame.onclick = () => socket.emit('joinGame');
