@@ -11,7 +11,12 @@ const cardSuits = ['♠', '♥', '♦', '♣'];
 const joker = '★'
 
 const defaultSettings = {
-  cardsPerHand: 2,
+  cardsPerHand: 3,
+  handsPerPlayer: 2,
+  nbrJokers: 2
+};
+const minSettings = {
+  cardsPerHand: 1,
   handsPerPlayer: 1,
   nbrJokers: 0
 };
@@ -90,7 +95,7 @@ io.on('connection', (socket) => {
     if (role != 0) return;                                        // must be admin (role 0)
     if (game.inGame) return;                                       // can't change settings during a game
     if (!Object.prototype.hasOwnProperty.call(defaultSettings, key)) return;
-    if (!Number.isInteger(value) || value < defaultSettings[key]) return;
+    if (!Number.isInteger(value) || value < minSettings[key]) return;
 
     game.settings[key] = value;
     spreadState();
