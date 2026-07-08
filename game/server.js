@@ -70,14 +70,6 @@ function slotsFullFor(player) {
   return game.tokens.slots[player].every(token => token != null);
 }
 
-// a player can only stay "ready" while every one of their slots is filled; called after
-// any token move since a move can empty a slot that was previously complete
-function clearStaleReady() {
-  for (let p = 0; p < game.ready.length; p++) {
-    if (!slotsFullFor(p)) game.ready[p] = false;
-  }
-}
-
 // record the tokens currently placed in front of hands, clear the slots, and start the next turn
 function advanceToNextTurn() {
   for (let p = 0; p < game.tokens.slots.length; p++) {
@@ -215,6 +207,11 @@ io.on('connection', (socket) => {
       if (!from) return; // unknown token position
     }
 
+    // any player whose slot is touched here (emptied, filled, or swapped for a different
+    // token) is no longer "ready", even if that slot ends up full again with a new token
+    const touchedPlayers = new Set();
+    if (from) touchedPlayers.add(from.player);
+
     if (to === 'center') {
       if (centerIndex != -1) return; // already in the center
       tokens.slots[from.player][from.hand] = null;
@@ -223,6 +220,7 @@ io.on('connection', (socket) => {
       const { player, hand } = to || {};
       if (!tokens.slots[player] || tokens.slots[player][hand] === undefined) return;
       if (from && from.player == player && from.hand == hand) return; // dropped on itself
+      touchedPlayers.add(player);
 
       const occupant = tokens.slots[player][hand];
       tokens.slots[player][hand] = token;
@@ -242,7 +240,7 @@ io.on('connection', (socket) => {
       }
     }
 
-    clearStaleReady();
+    for (const p of touchedPlayers) game.ready[p] = false;
     spreadState();
   });
 
