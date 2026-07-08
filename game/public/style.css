@@ -412,7 +412,6 @@ button:disabled {
 /* token/slot shape changes turn after turn: square, pentagon, heptagon, circle */
 
 .shape-square {
-    border-radius: 8px;
     clip-path: none;
 }
 
