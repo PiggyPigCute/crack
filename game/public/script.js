@@ -14,6 +14,7 @@ els = {
   nextTurnContainer: document.getElementById('next-turn-container'),
   river: document.getElementById('river'),
   reveal: document.getElementById('reveal'),
+  revealLobbyContainer: document.getElementById('reveal-lobby-container'),
   revealBlocks: document.getElementById('reveal-blocks'),
   revealRiver: document.getElementById('reveal-river')
 }
@@ -433,6 +434,17 @@ function renderNextTurnButton(isAdmin, tokens, turn) {
   els.nextTurnContainer.appendChild(btn);
 }
 
+function renderBackToLobbyButton(isAdmin) {
+  els.revealLobbyContainer.innerHTML = '';
+  if (!isAdmin) return;
+
+  const btn = document.createElement('button');
+  btn.className = 'btn-primary';
+  btn.textContent = 'Lobby';
+  btn.onclick = () => socket.emit('backToLobby');
+  els.revealLobbyContainer.appendChild(btn);
+}
+
 socket.on('role', (role) => {
   myRole = role;
 });
@@ -447,6 +459,7 @@ socket.on('gameState', (view) => {
     els.game.classList.add("hidden");
 
     renderReveal(view);
+    renderBackToLobbyButton(myRole == 0);
     return;
   }
   els.reveal.classList.add("hidden");

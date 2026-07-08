@@ -584,6 +584,10 @@ button:disabled {
     padding: 32px 40px 48px;
 }
 
+#reveal-lobby-container:empty {
+    display: none;
+}
+
 #reveal-blocks {
     columns: 2;
     column-gap: 20px;

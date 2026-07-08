@@ -241,6 +241,46 @@ io.on('connection', (socket) => {
     spreadState();
   });
 
+  socket.on('backToLobby', () => {
+    if (!game.inGame) return;                                      // only from an active game
+    if (role != 0) return;                                         // must be admin (role 0)
+    if (!game.revealed) return;                                    // only from the reveal screen
+
+    // drop players who disconnected mid-game and never reconnected, compacting the roles that remain
+    const oldToNew = new Map();
+    const newPlayers = [];
+    game.players.forEach((player, oldRole) => {
+      if (game.disconnectedPlayers.includes(oldRole)) return;
+      oldToNew.set(oldRole, newPlayers.length);
+      newPlayers.push(player);
+    });
+    game.players = newPlayers;
+    game.disconnectedPlayers = [];
+
+    for (const [socketId, r] of roles.entries()) {
+      if (r < 0) continue; // spectators are promoted below
+      const newRole = oldToNew.get(r);
+      if (newRole != r) {
+        roles.set(socketId, newRole);
+        io.to(socketId).emit('role', newRole);
+      }
+    }
+
+    // spectators become active players too
+    for (const [socketId, r] of roles.entries()) {
+      if (r == -1) {
+        const newRole = game.players.length;
+        game.players.push({ name: "Joueur·euse " + newRole });
+        roles.set(socketId, newRole);
+        io.to(socketId).emit('role', newRole);
+      }
+    }
+
+    game.inGame = false;
+
+    spreadState();
+  });
+
   socket.on('disconnect', () => {
     const r = roles.get(socket.id);
     roles.delete(socket.id);
