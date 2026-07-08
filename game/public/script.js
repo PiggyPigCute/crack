@@ -792,21 +792,13 @@ socket.on('gameState', (view) => {
     // player list
     els.playersList.innerHTML = '';
 
-    const renderNameRow = (container, name, isSelf, onMakeSpectator) => {
+    const renderNameRow = (container, name, isSelf) => {
       const div = document.createElement('div');
       div.className = 'player-tag';
 
       const nameSpan = document.createElement('span');
       nameSpan.innerHTML = name + (isSelf ? ' <strong>(Vous)</strong>' : '');
       div.appendChild(nameSpan);
-
-      if (onMakeSpectator) {
-        const btnSpectator = document.createElement('button');
-        btnSpectator.className = 'btn-make-spectator';
-        btnSpectator.textContent = 'Spectateur';
-        btnSpectator.onclick = onMakeSpectator;
-        div.appendChild(btnSpectator);
-      }
 
       container.appendChild(div);
     };
@@ -816,7 +808,7 @@ socket.on('gameState', (view) => {
     }
     view.players.forEach((player, playerRole) => {
       if (playerRole != myRole) {
-        renderNameRow(els.playersList, player.name, false, isAdmin ? () => socket.emit('makeSpectator', playerRole) : null);
+        renderNameRow(els.playersList, player.name, false);
       }
     });
 

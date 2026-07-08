@@ -292,7 +292,7 @@ io.on('connection', (socket) => {
 
   socket.on('makeSpectator', (targetRole) => {
     const role = roles.get(socket.id);
-    if (role != 0 && role != targetRole) return;                    // admin can target anyone, others only themselves
+    if (role != targetRole) return;                                 // can only target yourself
     if (game.inGame) return;                                        // lobby only
     if (!Number.isInteger(targetRole) || !game.players[targetRole]) return;
 

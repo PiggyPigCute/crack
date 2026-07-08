@@ -250,13 +250,6 @@ button:disabled {
     cursor: default;
 }
 
-.btn-make-spectator {
-    padding: 4px 10px;
-    font-size: 12px;
-    line-height: 1;
-    flex-shrink: 0;
-}
-
 /* ---------- Settings panel ---------- */
 
 .setting-row {
