@@ -401,9 +401,14 @@ socket.on('gameState', (view) => {
   }
 });
 
-els.btnChangeName.onclick = () => {
+function submitNameChange() {
   socket.emit('changeName', els.inputName.value);
-  els.inputName.value = ''
+  els.inputName.value = '';
+}
+
+els.btnChangeName.onclick = submitNameChange;
+els.inputName.onkeydown = (e) => {
+  if (e.key === 'Enter') submitNameChange();
 };
 
 /* DEBUG afac */
