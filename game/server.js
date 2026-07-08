@@ -49,7 +49,6 @@ function viewFor(role) {
     }
   } else { // in lobby
     return {
-      debugRole: role,
       inGame: false,
       players: game.players,
       disconnectedPlayers: game.disconnectedPlayers,
