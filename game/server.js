@@ -333,14 +333,14 @@ io.on('connection', (socket) => {
     if (game.inGame) return;  // lobby only
     if (role < 0) return;
 
-    const removedPlayer = game.players[targetRole];
-    game.players.splice(targetRole, 1);
+    const removedPlayer = game.players[role];
+    game.players.splice(role, 1);
     for (const [socketId, otherRole] of roles.entries()) {
-      if (otherRole == targetRole) {
+      if (otherRole == role) {
         spectators.set(socketId, { name: removedPlayer.name });
         roles.set(socketId, -1);
         io.to(socketId).emit('role', -1);
-      } else if (otherRole > targetRole) {
+      } else if (otherRole > role) {
         const newRole = otherRole - 1;
         roles.set(socketId, newRole);
         io.to(socketId).emit('role', newRole);
