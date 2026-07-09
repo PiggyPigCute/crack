@@ -714,12 +714,12 @@ function renderReveal(view) {
 
     blockDiv.appendChild(mainRow);
 
-    if (isRevealed) {
-      const pokerEl = document.createElement('div');
-      pokerEl.className = 'poker';
-      pokerEl.innerHTML = displayPoker(block.poker);
-      blockDiv.appendChild(pokerEl);
-    }
+    const pokerEl = document.createElement('div');
+    pokerEl.className = 'poker';
+    // kept as an (invisible) non-breaking space rather than omitted when hidden, so the
+    // block keeps the same height/shape whether or not this hand has been revealed yet
+    pokerEl.innerHTML = isRevealed ? displayPoker(block.poker) : ' ';
+    blockDiv.appendChild(pokerEl);
 
     els.revealBlocks.appendChild(blockDiv);
   });
