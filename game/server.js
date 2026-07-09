@@ -357,26 +357,18 @@ io.on('connection', (socket) => {
     if (!game.revealed) return;                                    // only from the reveal screen
     if (game.revealedCount < game.players.length * game.settings.handsPerPlayer) return; // every hand must be revealed first
 
-    // drop players who disconnected mid-game and never reconnected, compacting the roles that remain
-    const oldToNew = new Map();
-    const newPlayers = [];
-    game.players.forEach((player, oldRole) => {
-      if (game.disconnectedPlayers.includes(oldRole)) return;
-      oldToNew.set(oldRole, newPlayers.length);
-      newPlayers.push(player);
-    });
-    game.players = newPlayers;
-    game.disconnectedPlayers = [];
-
+    // everyone who was playing becomes a spectator, keeping their name; players who
+    // disconnected mid-game and never reconnected are simply dropped (nobody left to notify)
     for (const [socketId, r] of roles.entries()) {
-      if (r < 0) continue; // spectators stay spectators; they can join back in via 'joinGame'
-      const newRole = oldToNew.get(r);
-      if (newRole != r) {
-        roles.set(socketId, newRole);
-        io.to(socketId).emit('role', newRole);
-      }
+      if (r < 0) continue; // already a spectator
+      const player = game.players[r];
+      if (player) spectators.set(socketId, { name: player.name });
+      roles.set(socketId, -1);
+      io.to(socketId).emit('role', -1);
     }
 
+    game.players = [];
+    game.disconnectedPlayers = [];
     game.inGame = false;
 
     spreadState();
