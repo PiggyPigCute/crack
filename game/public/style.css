@@ -905,6 +905,9 @@ button:disabled {
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 4;
     line-clamp: 4;
+    /* -webkit-line-clamp alone can let a sliver of the 5th line's top peek through
+       (font metrics vs. line-height rounding); a hard max-height backs it up */
+    max-height: 5.6em;
     overflow: hidden;
     text-overflow: ellipsis;
     opacity: 1;
