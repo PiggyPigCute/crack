@@ -310,6 +310,27 @@ function createCardBackEl() {
   return cardDiv;
 }
 
+// a card shown face-down that can later be flipped face-up with a 3D turn animation;
+// both faces are built upfront (the front is simply hidden behind the back until flipped)
+function createFlipCardEl(card, startRevealed) {
+  const flipEl = document.createElement('div');
+  flipEl.className = 'card card-flip' + (startRevealed ? ' is-flipped' : '');
+
+  const innerEl = document.createElement('div');
+  innerEl.className = 'card-flip-inner';
+
+  const backEl = createCardBackEl();
+  backEl.classList.add('card-face');
+  innerEl.appendChild(backEl);
+
+  const frontEl = createCardEl(card);
+  frontEl.classList.add('card-face', 'card-face-front');
+  innerEl.appendChild(frontEl);
+
+  flipEl.appendChild(innerEl);
+  return flipEl;
+}
+
 const shapeClasses = ['shape-square', 'shape-pentagon', 'shape-heptagon', 'shape-circle'];
 
 function shapeClassForTurn(turn) {
@@ -648,10 +669,12 @@ function renderOpponents(players, tokens, disconnectedPlayers, ready, turn) {
   });
 }
 
+// persisted across renderReveal calls so that a newly-revealed hand can flip in place
+// instead of the whole screen being torn down and rebuilt on every reveal step
+let revealState = null; // { revealedCount, metas: [{ blockDiv, pokerEl, flipEls }] }
+
 // third screen, after 'lobby' and 'game': every hand revealed, sorted by its turn-4 (circle) token
 function renderReveal(view) {
-  els.revealBlocks.innerHTML = '';
-
   const lastTurn = shapeClasses.length - 1; // circle
 
   const blocks = [];
@@ -667,6 +690,29 @@ function renderReveal(view) {
     });
   });
   blocks.sort((a, b) => a.finalToken - b.finalToken);
+
+  const isFreshReveal = !revealState
+    || view.revealedCount === 0
+    || view.revealedCount < revealState.revealedCount
+    || revealState.metas.length !== blocks.length;
+
+  if (!isFreshReveal) {
+    if (view.revealedCount > revealState.revealedCount) {
+      // flip just the hands that newly became revealed since the last render
+      for (let index = revealState.revealedCount; index < view.revealedCount; index++) {
+        const meta = revealState.metas[index];
+        meta.blockDiv.classList.remove('reveal-block-hidden');
+        meta.flipEls.forEach(flipEl => flipEl.classList.add('is-flipped'));
+        meta.pokerEl.innerHTML = displayPoker(blocks[index].poker);
+      }
+      revealState.revealedCount = view.revealedCount;
+    }
+    renderRiver(els.revealRiver, view.river);
+    return;
+  }
+
+  els.revealBlocks.innerHTML = '';
+  const metas = [];
 
   blocks.forEach((block, index) => {
     const isRevealed = index < view.revealedCount;
@@ -705,11 +751,8 @@ function renderReveal(view) {
 
     const cardsRow = document.createElement('div');
     cardsRow.className = 'hand-cards reveal-cards';
-    if (isRevealed) {
-      block.hand.forEach(card => cardsRow.appendChild(createCardEl(card)));
-    } else {
-      block.hand.forEach(() => cardsRow.appendChild(createCardBackEl()));
-    }
+    const flipEls = block.hand.map(card => createFlipCardEl(card, isRevealed));
+    flipEls.forEach(flipEl => cardsRow.appendChild(flipEl));
     mainRow.appendChild(cardsRow);
 
     blockDiv.appendChild(mainRow);
@@ -722,7 +765,11 @@ function renderReveal(view) {
     blockDiv.appendChild(pokerEl);
 
     els.revealBlocks.appendChild(blockDiv);
+
+    metas.push({ blockDiv, pokerEl, flipEls });
   });
+
+  revealState = { revealedCount: view.revealedCount, metas };
 
   renderRiver(els.revealRiver, view.river);
 }
