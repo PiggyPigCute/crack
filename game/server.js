@@ -328,11 +328,10 @@ io.on('connection', (socket) => {
     spreadState();
   });
 
-  socket.on('makeSpectator', (targetRole) => {
+  socket.on('makeSpectator', () => {
     const role = roles.get(socket.id);
-    if (role != targetRole) return;                                 // can only target yourself
-    if (game.inGame) return;                                        // lobby only
-    if (!Number.isInteger(targetRole) || !game.players[targetRole]) return;
+    if (game.inGame) return;  // lobby only
+    if (role < 0) return;
 
     const removedPlayer = game.players[targetRole];
     game.players.splice(targetRole, 1);

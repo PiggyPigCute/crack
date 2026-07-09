@@ -1089,19 +1089,21 @@ document.addEventListener('keydown', (e) => {
 
   const typing = isTypingTarget(document.activeElement);
 
-  if (!typing && e.key.toLowerCase() === 't') {
+  if (typing) return; // don't hijack normal typing (name field, chat input...)
+  
+  if (e.key.toLowerCase() === 't') {
     e.preventDefault();
     openChat();
     return;
   }
 
-  if (typing) return; // don't hijack normal typing (name field, chat input...)
-
   if (!els.lobby.classList.contains('hidden')) {
     if (e.key === ' ' || e.key === 'Enter') {
       e.preventDefault();
       if (myRole < 0) socket.emit('joinGame');
-      else socket.emit('makeSpectator', myRole);
+      else {
+        socket.emit(e.shiftKey ? 'startGame' : 'makeSpectator');
+      }
     }
     return;
   }
