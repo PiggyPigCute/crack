@@ -25,6 +25,7 @@ els = {
   revealRiver: document.getElementById('reveal-river'),
   chatToggle: document.getElementById('chat-toggle'),
   chatBadge: document.getElementById('chat-badge'),
+  chatPreview: document.getElementById('chat-preview'),
   chatPanel: document.getElementById('chat-panel'),
   chatMessages: document.getElementById('chat-messages'),
   chatForm: document.getElementById('chat-form'),
@@ -993,11 +994,29 @@ function setChatUnread(count) {
   els.chatBadge.classList.toggle('hidden', chatUnread === 0);
 }
 
+let chatPreviewTimeout = null;
+
+function hideChatPreview() {
+  clearTimeout(chatPreviewTimeout);
+  els.chatPreview.classList.add('hidden');
+}
+
+// desktop-only nicety (hidden outright on mobile via CSS): flashes the latest message
+// above the chat button for a few seconds when the panel is closed
+function showChatPreview(message) {
+  els.chatPreview.textContent = message.name + ' : ' + message.text;
+  els.chatPreview.classList.remove('hidden');
+
+  clearTimeout(chatPreviewTimeout);
+  chatPreviewTimeout = setTimeout(hideChatPreview, 5000);
+}
+
 els.chatToggle.onclick = () => {
   chatOpen = !chatOpen;
   els.chatPanel.classList.toggle('hidden', !chatOpen);
   if (chatOpen) {
     setChatUnread(0);
+    hideChatPreview();
     els.chatMessages.scrollTop = els.chatMessages.scrollHeight;
     els.chatInput.focus();
   }
@@ -1018,5 +1037,8 @@ socket.on('chatHistory', (messages) => {
 
 socket.on('chatMessage', (message) => {
   appendChatMessage(message);
-  if (!chatOpen) setChatUnread(chatUnread + 1);
+  if (!chatOpen) {
+    setChatUnread(chatUnread + 1);
+    showChatPreview(message);
+  }
 });
