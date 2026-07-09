@@ -1243,3 +1243,26 @@ button:disabled {
         gap: 12px;
     }
 }
+
+/* ---------- Short (but not mobile) screens: the river eats too much of the limited
+   vertical space in its normal spot, so rotate it 90° and dock it against the right
+   edge instead ---------- */
+
+@media (min-width: 701px) and (max-height: 800px) {
+    #game {
+        padding-right: 160px;
+    }
+
+    #river {
+        position: fixed;
+        top: 50%;
+        left: calc(100% - 16px);
+        margin: 0;
+        /* Pivoting around the middle of the (pre-rotation) top edge, then rotating
+           clockwise and sliding back by half the (pre-rotation) width, lands the box
+           flush against the right edge and perfectly vertically centered — regardless
+           of the river's actual width, which varies with card sizes per breakpoint. */
+        transform-origin: top center;
+        transform: translateX(-50%) rotate(90deg);
+    }
+}
