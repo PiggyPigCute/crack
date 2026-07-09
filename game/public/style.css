@@ -348,8 +348,8 @@ button:disabled {
 }
 
 .river-deck::before {
-    transform: translate(4px, 4px);
-    z-index: 0;
+    transform: translate(-2px, -2px);
+    z-index: 3;
 }
 
 .river-deck::after {
