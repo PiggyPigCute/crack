@@ -324,10 +324,6 @@ button:disabled {
     margin-top: auto;
 }
 
-#river:empty {
-    display: none;
-}
-
 /* ---------- Opponents row ---------- */
 
 #opponents-row {
@@ -625,6 +621,12 @@ button:disabled {
     -webkit-user-select: none; /* Chrome, Safari, Opéra depuis la version 15 */
     -ms-user-select: none; /* Internet explorer depuis la version 10 et Edge */
     user-select: none; /* Propriété standard */
+}
+
+.card.card-empty {
+    background: transparent;
+    border: 1px dashed var(--card-border);
+    box-shadow: none;
 }
 
 .card .card-suit {

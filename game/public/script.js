@@ -322,9 +322,19 @@ function createRecordedTokenEl(entry) {
   return el;
 }
 
+const riverSize = 5;
+
 function renderRiver(container, river) {
   container.innerHTML = '';
-  river.forEach(card => container.appendChild(createCardEl(card)));
+  for (let i = 0; i < riverSize; i++) {
+    if (river[i]) {
+      container.appendChild(createCardEl(river[i]));
+    } else {
+      const emptySlot = document.createElement('div');
+      emptySlot.className = 'card card-empty';
+      container.appendChild(emptySlot);
+    }
+  }
 }
 
 // cards, recorded-token history and the poker readout only change when the turn advances
