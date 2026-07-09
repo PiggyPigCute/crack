@@ -1098,36 +1098,31 @@ document.addEventListener('keydown', (e) => {
     return;
   }
 
-  if (!els.lobby.classList.contains('hidden')) {
-    if (e.code === 'Space' || e.code === 'Enter') {
-      e.preventDefault();
+  if (e.code === 'Space' || e.code === 'Enter') {
+    e.preventDefault();
+    if (!els.lobby.classList.contains('hidden')) {
       if (myRole < 0) socket.emit('joinGame');
-      else {
-        socket.emit(e.shiftKey ? 'startGame' : 'makeSpectator');
-      }
+      else socket.emit(e.shiftKey ? 'startGame' : 'makeSpectator');
+    }
+    if (!els.game.classList.contains('hidden')) {
+      const btn = els.nextTurnContainer.querySelector('button');
+      if (btn && !btn.disabled) btn.click();
+    }
+    if (!els.reveal.classList.contains('hidden')) {
+      socket.emit(revealedCount<totalHands ? 'revealNext' : 'backToLobby');
     }
     return;
   }
 
-  if (!els.game.classList.contains('hidden')) {
-    if (e.code === 'Space' || e.code === 'Enter') {
-      e.preventDefault();
-      const btn = els.nextTurnContainer.querySelector('button');
-      if (btn && !btn.disabled) btn.click();
-      return;
-    }
-
-    if (myRole >= 0 && currentTokens && /^(Digit|Numpad)[0-9]$/.test(e.code)) {
-      e.preventDefault();
-      const handIndex = e.shiftKey ? 1 : 0;
-      const num = e.code[e.code.length-1];
-
-      if (num === '0') {
-        const token = currentTokens.slots[myRole] && currentTokens.slots[myRole][handIndex];
-        if (token != null) socket.emit('moveToken', { token, to: 'center' });
-      } else {
-        socket.emit('moveToken', { token: Number(num), to: { player: myRole, hand: handIndex } });
-      }
+  if (myRole >= 0 && currentTokens && /^(Digit|Numpad)[0-9]$/.test(e.code) && !els.game.classList.contains('hidden')) {
+    e.preventDefault();
+    const handIndex = e.shiftKey ? 1 : 0;
+    const num = e.code[e.code.length-1];
+    if (num === '0') {
+      const token = currentTokens.slots[myRole] && currentTokens.slots[myRole][handIndex];
+      if (token != null) socket.emit('moveToken', { token, to: 'center' });
+    } else {
+      socket.emit('moveToken', { token: Number(num), to: { player: myRole, hand: handIndex } });
     }
   }
 });
