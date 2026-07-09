@@ -1088,6 +1088,7 @@ function isTypingTarget(el) {
 }
 
 document.addEventListener('keydown', (e) => {
+  if (e.repeat) return;
 
   if (e.code === 'Escape') {
     if (chatOpen) closeChat();
