@@ -970,20 +970,24 @@ els.btnBecomeSpectator.onclick = () => socket.emit('makeSpectator', myRole);
 let chatOpen = false;
 let chatUnread = 0;
 
-function appendChatMessage(message) {
-  const el = document.createElement('div');
-  el.className = 'chat-message';
-
+// shared by the chat panel and the fading preview feed; textContent throughout,
+// never innerHTML, since message.name/message.text come from other users
+function fillChatMessageEl(container, message) {
   const nameEl = document.createElement('span');
   nameEl.className = 'chat-message-name';
   nameEl.textContent = message.name + ' :';
-  el.appendChild(nameEl);
+  container.appendChild(nameEl);
 
-  // textContent, never innerHTML: message.text comes from other users
   const textEl = document.createElement('span');
   textEl.className = 'chat-message-text';
-  textEl.textContent = message.text;
-  el.appendChild(textEl);
+  textEl.textContent = ' ' + message.text;
+  container.appendChild(textEl);
+}
+
+function appendChatMessage(message) {
+  const el = document.createElement('div');
+  el.className = 'chat-message';
+  fillChatMessageEl(el, message);
 
   els.chatMessages.appendChild(el);
   els.chatMessages.scrollTop = els.chatMessages.scrollHeight;
@@ -1011,7 +1015,7 @@ function showChatPreview(message) {
 
   const el = document.createElement('div');
   el.className = 'chat-preview-message';
-  el.textContent = message.name + ' : ' + message.text;
+  fillChatMessageEl(el, message);
   els.chatPreview.appendChild(el);
 
   setTimeout(() => {
