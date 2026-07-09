@@ -990,7 +990,6 @@ function appendChatMessage(message) {
 
 function setChatUnread(count) {
   chatUnread = count;
-  els.chatBadge.textContent = chatUnread;
   els.chatBadge.classList.toggle('hidden', chatUnread === 0);
 }
 

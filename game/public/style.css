@@ -854,7 +854,7 @@ button:disabled {
     bottom: 16px;
     z-index: 500;
     display: flex;
-    flex-direction: column;
+    flex-direction: column-reverse;
     align-items: flex-end;
     gap: 8px;
 }
@@ -872,19 +872,13 @@ button:disabled {
 
 #chat-badge {
     position: absolute;
-    top: -6px;
-    right: -6px;
-    min-width: 20px;
-    height: 20px;
-    padding: 0 5px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #a81f1f;
-    color: white;
-    font-size: 11px;
-    font-weight: bold;
-    border-radius: 999px;
+    display: block;
+    top: -2px;
+    right: -2px;
+    width: 10px;
+    height: 10px;
+    background: var(--gold-light);
+    border-radius: 50%;
     border: 2px solid white;
 }
 
