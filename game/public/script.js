@@ -1103,13 +1103,14 @@ document.addEventListener('keydown', (e) => {
     if (!els.lobby.classList.contains('hidden')) {
       if (myRole < 0) socket.emit('joinGame');
       else socket.emit(e.shiftKey ? 'startGame' : 'makeSpectator');
-    }
-    if (!els.game.classList.contains('hidden')) {
-      const btn = els.nextTurnContainer.querySelector('button');
+    } else {
+      if (!els.game.classList.contains('hidden')) {
+        const bntContainer = els.nextTurnContainer;
+      } else {
+        const bntContainer = els.revealLobbyContainer;
+      }
+      const btn = bntContainer.querySelector('button');
       if (btn && !btn.disabled) btn.click();
-    }
-    if (!els.reveal.classList.contains('hidden')) {
-      socket.emit(revealedCount<totalHands ? 'revealNext' : 'backToLobby');
     }
     return;
   }
