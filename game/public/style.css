@@ -901,9 +901,12 @@ button:disabled {
     border-radius: 10px;
     box-shadow: 0 4px 12px rgba(43, 38, 32, 0.18);
     backdrop-filter: blur(6px);
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 4;
+    line-clamp: 4;
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap;
     opacity: 1;
     transition: opacity 1s ease;
 }
