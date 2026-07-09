@@ -670,6 +670,11 @@ button:disabled {
     box-shadow: none;
 }
 
+.card.card-back {
+    background: url('imgs/back.svg') center / cover no-repeat;
+    border-color: #2a1c0f;
+}
+
 .card .card-suit {
     font-size: clamp(15px, 5vw, 22px);
 }
@@ -738,6 +743,10 @@ button:disabled {
     box-shadow: 0 8px 20px rgba(43, 38, 32, 0.18);
     backdrop-filter: blur(6px);
     break-inside: avoid;
+}
+
+.reveal-block-hidden {
+    opacity: 0.75;
 }
 
 .reveal-block-main {

@@ -304,6 +304,12 @@ function createCardEl(card) {
   return cardDiv;
 }
 
+function createCardBackEl() {
+  const cardDiv = document.createElement('div');
+  cardDiv.className = 'card card-back';
+  return cardDiv;
+}
+
 const shapeClasses = ['shape-square', 'shape-pentagon', 'shape-heptagon', 'shape-circle'];
 
 function shapeClassForTurn(turn) {
@@ -663,13 +669,15 @@ function renderReveal(view) {
   blocks.sort((a, b) => a.finalToken - b.finalToken);
 
   blocks.forEach((block, index) => {
+    const isRevealed = index < view.revealedCount;
+
     const previousBlock = blocks[index - 1];
     const nextBlock = blocks[index + 1];
     const isMisranked = (previousBlock && comparePokers(block.poker, previousBlock.poker) == 2)
       || (nextBlock && comparePokers(block.poker, nextBlock.poker) == 1);
 
     const blockDiv = document.createElement('div');
-    blockDiv.className = 'reveal-block';
+    blockDiv.className = 'reveal-block' + (isRevealed ? '' : ' reveal-block-hidden');
 
     const mainRow = document.createElement('div');
     mainRow.className = 'reveal-block-main';
@@ -697,15 +705,21 @@ function renderReveal(view) {
 
     const cardsRow = document.createElement('div');
     cardsRow.className = 'hand-cards reveal-cards';
-    block.hand.forEach(card => cardsRow.appendChild(createCardEl(card)));
+    if (isRevealed) {
+      block.hand.forEach(card => cardsRow.appendChild(createCardEl(card)));
+    } else {
+      block.hand.forEach(() => cardsRow.appendChild(createCardBackEl()));
+    }
     mainRow.appendChild(cardsRow);
 
     blockDiv.appendChild(mainRow);
 
-    const pokerEl = document.createElement('div');
-    pokerEl.className = 'poker';
-    pokerEl.innerHTML = displayPoker(block.poker);
-    blockDiv.appendChild(pokerEl);
+    if (isRevealed) {
+      const pokerEl = document.createElement('div');
+      pokerEl.className = 'poker';
+      pokerEl.innerHTML = displayPoker(block.poker);
+      blockDiv.appendChild(pokerEl);
+    }
 
     els.revealBlocks.appendChild(blockDiv);
   });
@@ -782,14 +796,21 @@ function renderOkButton(tokens, ready) {
   els.nextTurnContainer.appendChild(btn);
 }
 
-function renderBackToLobbyButton(isAdmin) {
+function renderRevealButton(isAdmin, revealedCount, totalHands) {
   els.revealLobbyContainer.innerHTML = '';
   if (!isAdmin) return;
 
   const btn = document.createElement('button');
   btn.className = 'btn-primary';
-  btn.textContent = 'Lobby';
-  btn.onclick = () => socket.emit('backToLobby');
+
+  if (revealedCount < totalHands) {
+    btn.textContent = 'Révéler';
+    btn.onclick = () => socket.emit('revealNext');
+  } else {
+    btn.textContent = 'Lobby';
+    btn.onclick = () => socket.emit('backToLobby');
+  }
+
   els.revealLobbyContainer.appendChild(btn);
 }
 
@@ -805,7 +826,8 @@ socket.on('gameState', (view) => {
     els.game.classList.add("hidden");
 
     renderReveal(view);
-    renderBackToLobbyButton(myRole == 0);
+    const totalHands = view.hand.reduce((sum, playerHands) => sum + playerHands.length, 0);
+    renderRevealButton(myRole == 0, view.revealedCount, totalHands);
     return;
   }
   els.reveal.classList.add("hidden");

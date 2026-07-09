@@ -52,6 +52,7 @@ function viewFor(socketId, role) {
       turn: game.turn,
       ready: game.ready,
       revealed: game.revealed,
+      revealedCount: game.revealedCount,
       settings: game.settings,
     }
   } else { // in lobby
@@ -282,11 +283,22 @@ io.on('connection', (socket) => {
     if (game.ready.length > 0 && game.ready.every(r => r)) {
       if (game.turn >= riverRevealSchedule.length - 1) {
         game.revealed = true;
+        game.revealedCount = 0; // hands get revealed one at a time via 'revealNext'
       } else {
         advanceToNextTurn();
       }
     }
 
+    spreadState();
+  });
+
+  socket.on('revealNext', () => {
+    const role = roles.get(socket.id);
+    if (role != 0) return;                                          // must be admin (role 0)
+    if (!game.inGame || !game.revealed) return;                      // only from the reveal screen
+    if (game.revealedCount >= game.players.length * game.settings.handsPerPlayer) return;
+
+    game.revealedCount++;
     spreadState();
   });
 
@@ -318,6 +330,7 @@ io.on('connection', (socket) => {
     if (!game.inGame) return;                                      // only from an active game
     if (role != 0) return;                                         // must be admin (role 0)
     if (!game.revealed) return;                                    // only from the reveal screen
+    if (game.revealedCount < game.players.length * game.settings.handsPerPlayer) return; // every hand must be revealed first
 
     // drop players who disconnected mid-game and never reconnected, compacting the roles that remain
     const oldToNew = new Map();
