@@ -994,21 +994,30 @@ function setChatUnread(count) {
   els.chatBadge.classList.toggle('hidden', chatUnread === 0);
 }
 
-let chatPreviewTimeout = null;
+const chatPreviewMax = 5; // Minecraft-style feed: a handful of recent messages, each fading on its own
+const chatPreviewVisibleMs = 6000;
+const chatPreviewFadeMs = 1000;
 
-function hideChatPreview() {
-  clearTimeout(chatPreviewTimeout);
-  els.chatPreview.classList.add('hidden');
+function clearChatPreview() {
+  els.chatPreview.innerHTML = '';
 }
 
-// desktop-only nicety (hidden outright on mobile via CSS): flashes the latest message
-// above the chat button for a few seconds when the panel is closed
+// desktop-only nicety (hidden outright on mobile via CSS): stacks the latest messages
+// above the chat button when the panel is closed, each fading out on its own after a while
 function showChatPreview(message) {
-  els.chatPreview.textContent = message.name + ' : ' + message.text;
-  els.chatPreview.classList.remove('hidden');
+  while (els.chatPreview.children.length >= chatPreviewMax) {
+    els.chatPreview.firstChild.remove();
+  }
 
-  clearTimeout(chatPreviewTimeout);
-  chatPreviewTimeout = setTimeout(hideChatPreview, 5000);
+  const el = document.createElement('div');
+  el.className = 'chat-preview-message';
+  el.textContent = message.name + ' : ' + message.text;
+  els.chatPreview.appendChild(el);
+
+  setTimeout(() => {
+    el.classList.add('is-fading');
+    setTimeout(() => el.remove(), chatPreviewFadeMs);
+  }, chatPreviewVisibleMs);
 }
 
 els.chatToggle.onclick = () => {
@@ -1016,7 +1025,7 @@ els.chatToggle.onclick = () => {
   els.chatPanel.classList.toggle('hidden', !chatOpen);
   if (chatOpen) {
     setChatUnread(0);
-    hideChatPreview();
+    clearChatPreview();
     els.chatMessages.scrollTop = els.chatMessages.scrollHeight;
     els.chatInput.focus();
   }

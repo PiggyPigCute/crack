@@ -883,19 +883,33 @@ button:disabled {
 }
 
 #chat-preview {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    pointer-events: none;
+}
+
+.chat-preview-message {
     max-width: min(280px, 70vw);
-    padding: 8px 12px;
+    padding: 6px 10px;
     font-size: 13px;
     line-height: 1.4;
     color: var(--ink);
     background: var(--card-bg);
     border: 1px solid var(--card-border);
-    border-radius: 12px;
-    box-shadow: 0 6px 16px rgba(43, 38, 32, 0.2);
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(43, 38, 32, 0.18);
     backdrop-filter: blur(6px);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    opacity: 1;
+    transition: opacity 1s ease;
+}
+
+.chat-preview-message.is-fading {
+    opacity: 0;
 }
 
 #chat-panel {
