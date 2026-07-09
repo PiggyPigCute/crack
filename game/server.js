@@ -172,14 +172,14 @@ io.on('connection', (socket) => {
     spreadState()
   })
 
-  socket.on('updateSetting', ({ key, value } = {}) => {
+  socket.on('updateSetting', ({ key, offset } = {}) => {
     const role = roles.get(socket.id);
     if (role != 0) return;                                        // must be admin (role 0)
     if (game.inGame) return;                                       // can't change settings during a game
     if (!Object.prototype.hasOwnProperty.call(defaultSettings, key)) return;
-    if (!Number.isInteger(value) || value < minSettings[key]) return;
+    if (!Number.isInteger(offset) || game.settings[key] + offset < minSettings[key]) return;
 
-    game.settings[key] = value;
+    game.settings[key] += offset;
     spreadState();
   });
 

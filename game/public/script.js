@@ -787,6 +787,12 @@ const settingsMeta = [
   { key: 'handsPerPlayer', label: 'Mains par joueur·euse', min: 1 },
   { key: 'nbrJokers', label: 'Nombre de jokers', min: 0 },
 ];
+const settingsKeyboardShortcuts = {
+  C: 'cardsPerHand',
+  M: 'handsPerPlayer',
+  H: 'handsPerPlayer',
+  J: 'nbrJokers',
+}
 
 function renderSettingsPanel(settings, isAdmin) {
   els.settingsPanel.innerHTML = '';
@@ -809,7 +815,7 @@ function renderSettingsPanel(settings, isAdmin) {
       const btnDec = document.createElement('button');
       btnDec.textContent = '-';
       btnDec.disabled = value <= meta.min;
-      btnDec.onclick = () => socket.emit('updateSetting', { key: meta.key, value: value - 1 });
+      btnDec.onclick = () => socket.emit('updateSetting', { key: meta.key, offset: - 1 });
       row.appendChild(btnDec);
     }
 
@@ -820,7 +826,7 @@ function renderSettingsPanel(settings, isAdmin) {
     if (isAdmin) {
       const btnInc = document.createElement('button');
       btnInc.textContent = '+';
-      btnInc.onclick = () => socket.emit('updateSetting', { key: meta.key, value: value + 1 });
+      btnInc.onclick = () => socket.emit('updateSetting', { key: meta.key, offset: + 1 });
       row.appendChild(btnInc);
     }
 
@@ -1120,5 +1126,14 @@ document.addEventListener('keydown', (e) => {
     } else {
       socket.emit('moveToken', { token: Number(num), to: { player: myRole, hand: handIndex } });
     }
+    return;
+  }
+
+  if (/Key[CMHJ]/.test(e.code) && myRole == 0 && !els.lobby.classList.contains('hidden')) {
+    e.preventDefault();
+    socket.emit('updateSetting', {
+      key: settingsKeyboardShortcuts[e.code[3]],
+      offset: e.shiftKey ? -1 : 1
+    })
   }
 });
