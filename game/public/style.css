@@ -716,10 +716,11 @@ button:disabled {
 }
 
 #reveal-blocks {
-    columns: 2;
+    columns: auto;
+    column-width: 420px;
     column-gap: 20px;
     width: 100%;
-    max-width: 760px;
+    max-width: 1200px;
     max-height: 100%;
     overflow-y: auto;
     padding: 4px;
@@ -788,13 +789,6 @@ button:disabled {
 
 .reveal-cards .card {
     flex-shrink: 0;
-    width: 40px;
-    height: 58px;
-    font-size: 14px;
-}
-
-.reveal-cards .card .card-suit {
-    font-size: 15px;
 }
 
 #reveal-river {
