@@ -873,9 +873,12 @@ socket.on('role', (role) => {
   myRole = role;
 });
 
+let currentTokens = null; // latest view.tokens, kept around for the keyboard shortcuts
+
 socket.on('gameState', (view) => {
 
   if (view.revealed) {
+    currentTokens = null;
     els.reveal.classList.remove("hidden");
     els.lobby.classList.add("hidden");
     els.game.classList.add("hidden");
@@ -892,6 +895,7 @@ socket.on('gameState', (view) => {
     els.lobby.classList.add("hidden");
 
     if (view.tokens) {
+      currentTokens = view.tokens;
       animateTokens(() => {
         if (myRole >= 0) renderHands(view.hand, view.tokens, view.turn, view.river);
         renderOpponents(view.players, view.tokens, view.disconnectedPlayers, view.ready, view.turn);
@@ -902,6 +906,7 @@ socket.on('gameState', (view) => {
 
     renderRiver(els.riverSlots, view.river, els.riverDeck);
   } else {
+    currentTokens = null;
     els.lobby.classList.remove("hidden");
     els.game.classList.add("hidden");
 
@@ -1067,5 +1072,58 @@ socket.on('chatMessage', (message) => {
   if (!chatOpen) {
     setChatUnread(chatUnread + 1);
     showChatPreview(message);
+  }
+});
+
+// ---------- Keyboard shortcuts ----------
+
+function isTypingTarget(el) {
+  return !!el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA');
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    if (chatOpen) closeChat();
+    return;
+  }
+
+  const typing = isTypingTarget(document.activeElement);
+
+  if (!typing && e.key.toLowerCase() === 't') {
+    e.preventDefault();
+    openChat();
+    return;
+  }
+
+  if (typing) return; // don't hijack normal typing (name field, chat input...)
+
+  if (!els.lobby.classList.contains('hidden')) {
+    if (e.key === ' ' || e.key === 'Enter') {
+      e.preventDefault();
+      if (myRole < 0) socket.emit('joinGame');
+      else socket.emit('makeSpectator', myRole);
+    }
+    return;
+  }
+
+  if (!els.game.classList.contains('hidden')) {
+    if (e.key === ' ' || e.key === 'Enter') {
+      e.preventDefault();
+      const btn = els.nextTurnContainer.querySelector('button');
+      if (btn && !btn.disabled) btn.click();
+      return;
+    }
+
+    if (myRole >= 0 && currentTokens && /^[0-9]$/.test(e.key)) {
+      e.preventDefault();
+      const handIndex = e.shiftKey ? 1 : 0;
+
+      if (e.key === '0') {
+        const token = currentTokens.slots[myRole] && currentTokens.slots[myRole][handIndex];
+        if (token != null) socket.emit('moveToken', { token, to: 'center' });
+      } else {
+        socket.emit('moveToken', { token: Number(e.key), to: { player: myRole, hand: handIndex } });
+      }
+    }
   }
 });
