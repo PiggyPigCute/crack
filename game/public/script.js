@@ -1119,12 +1119,12 @@ document.addEventListener('keydown', (e) => {
   if (myRole >= 0 && currentTokens && /^(Digit|Numpad)[0-9]$/.test(e.code) && !els.game.classList.contains('hidden')) {
     e.preventDefault();
     const handIndex = e.shiftKey ? 1 : 0;
-    const num = e.code[e.code.length-1];
-    if (num === '0') {
-      const token = currentTokens.slots[myRole] && currentTokens.slots[myRole][handIndex];
+    const num = Number(e.code[e.code.length-1]);
+    const token = currentTokens.slots[myRole][handIndex] || null;
+    if (num === 0 || num === token) {
       if (token != null) socket.emit('moveToken', { token, to: 'center' });
     } else {
-      socket.emit('moveToken', { token: Number(num), to: { player: myRole, hand: handIndex } });
+      socket.emit('moveToken', { token: num, to: { player: myRole, hand: handIndex } });
     }
     return;
   }
