@@ -1117,7 +1117,7 @@ document.addEventListener('keydown', (e) => {
       return;
     }
 
-    if (myRole >= 0 && currentTokens && /(Digit|Numpad)?^[0-9]$/.test(e.code)) {
+    if (myRole >= 0 && currentTokens && /^(Digit|Numpad)[0-9]$/.test(e.code)) {
       e.preventDefault();
       const handIndex = e.shiftKey ? 1 : 0;
       const num = e.code[e.code.length-1];
