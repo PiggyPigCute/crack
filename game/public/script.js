@@ -1104,12 +1104,7 @@ document.addEventListener('keydown', (e) => {
       if (myRole < 0) socket.emit('joinGame');
       else socket.emit(e.shiftKey ? 'startGame' : 'makeSpectator');
     } else {
-      if (!els.game.classList.contains('hidden')) {
-        const bntContainer = els.nextTurnContainer;
-      } else {
-        const bntContainer = els.revealLobbyContainer;
-      }
-      const btn = bntContainer.querySelector('button');
+      const btn = ((!els.game.classList.contains('hidden')) ? els.nextTurnContainer : els.revealLobbyContainer).querySelector('button');
       if (btn && !btn.disabled) btn.click();
     }
     return;
