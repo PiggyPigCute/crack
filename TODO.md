@@ -1,6 +1,5 @@
 * Jetons s'affichent que lorsque les cartes sont visibles
 * Affichage Défaite ou Réussite
-* UI petit pc
 * UI reveal-box
 * Historique des mouvements
 * Spec quand on revient du reveal screen
