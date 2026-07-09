@@ -999,7 +999,7 @@ function setChatUnread(count) {
 }
 
 const chatPreviewMax = 5;
-const chatPreviewVisibleMs = 150000;
+const chatPreviewVisibleMs = 1500;
 const chatPreviewFadeMs = 500;
 
 function clearChatPreview() {
