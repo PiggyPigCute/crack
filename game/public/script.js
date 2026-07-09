@@ -969,7 +969,7 @@ els.inputName.onkeydown = (e) => {
 };
 
 els.btnJoinGame.onclick = () => socket.emit('joinGame');
-els.btnBecomeSpectator.onclick = () => socket.emit('makeSpectator', myRole);
+els.btnBecomeSpectator.onclick = () => socket.emit('makeSpectator');
 
 // ---------- Chat ----------
 
