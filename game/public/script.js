@@ -1082,7 +1082,8 @@ function isTypingTarget(el) {
 }
 
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') {
+
+  if (e.code === 'Escape') {
     if (chatOpen) closeChat();
     return;
   }
@@ -1091,14 +1092,14 @@ document.addEventListener('keydown', (e) => {
 
   if (typing) return; // don't hijack normal typing (name field, chat input...)
   
-  if (e.key.toLowerCase() === 't') {
-    e.preventDefault();
+  if (e.code === 'KeyT') {
+    // e.preventDefault();
     openChat();
     return;
   }
 
   if (!els.lobby.classList.contains('hidden')) {
-    if (e.key === ' ' || e.key === 'Enter') {
+    if (e.code === 'Space' || e.code === 'Enter') {
       e.preventDefault();
       if (myRole < 0) socket.emit('joinGame');
       else {
@@ -1109,17 +1110,17 @@ document.addEventListener('keydown', (e) => {
   }
 
   if (!els.game.classList.contains('hidden')) {
-    if (e.key === ' ' || e.key === 'Enter') {
+    if (e.code === 'Space' || e.code === 'Enter') {
       e.preventDefault();
       const btn = els.nextTurnContainer.querySelector('button');
       if (btn && !btn.disabled) btn.click();
       return;
     }
 
-    if (myRole >= 0 && currentTokens && /(Digit)?^[0-9]$/.test(e.key)) {
+    if (myRole >= 0 && currentTokens && /(Digit|Numpad)?^[0-9]$/.test(e.code)) {
       e.preventDefault();
       const handIndex = e.shiftKey ? 1 : 0;
-      const num = e.key[e.key.length-1];
+      const num = e.code[e.code.length-1];
 
       if (num === '0') {
         const token = currentTokens.slots[myRole] && currentTokens.slots[myRole][handIndex];
