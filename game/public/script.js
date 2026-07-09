@@ -22,7 +22,13 @@ els = {
   reveal: document.getElementById('reveal'),
   revealLobbyContainer: document.getElementById('reveal-lobby-container'),
   revealBlocks: document.getElementById('reveal-blocks'),
-  revealRiver: document.getElementById('reveal-river')
+  revealRiver: document.getElementById('reveal-river'),
+  chatToggle: document.getElementById('chat-toggle'),
+  chatBadge: document.getElementById('chat-badge'),
+  chatPanel: document.getElementById('chat-panel'),
+  chatMessages: document.getElementById('chat-messages'),
+  chatForm: document.getElementById('chat-form'),
+  chatInput: document.getElementById('chat-input')
 }
 
 const cardValues = ['A','K','Q','J','10','9','8','7','6','5','4','3','2'];
@@ -957,3 +963,61 @@ els.inputName.onkeydown = (e) => {
 
 els.btnJoinGame.onclick = () => socket.emit('joinGame');
 els.btnBecomeSpectator.onclick = () => socket.emit('makeSpectator', myRole);
+
+// ---------- Chat ----------
+
+let chatOpen = false;
+let chatUnread = 0;
+
+function appendChatMessage(message) {
+  const el = document.createElement('div');
+  el.className = 'chat-message';
+
+  const nameEl = document.createElement('span');
+  nameEl.className = 'chat-message-name';
+  nameEl.textContent = message.name + ' :';
+  el.appendChild(nameEl);
+
+  // textContent, never innerHTML: message.text comes from other users
+  const textEl = document.createElement('span');
+  textEl.className = 'chat-message-text';
+  textEl.textContent = message.text;
+  el.appendChild(textEl);
+
+  els.chatMessages.appendChild(el);
+  els.chatMessages.scrollTop = els.chatMessages.scrollHeight;
+}
+
+function setChatUnread(count) {
+  chatUnread = count;
+  els.chatBadge.textContent = chatUnread;
+  els.chatBadge.classList.toggle('hidden', chatUnread === 0);
+}
+
+els.chatToggle.onclick = () => {
+  chatOpen = !chatOpen;
+  els.chatPanel.classList.toggle('hidden', !chatOpen);
+  if (chatOpen) {
+    setChatUnread(0);
+    els.chatMessages.scrollTop = els.chatMessages.scrollHeight;
+    els.chatInput.focus();
+  }
+};
+
+els.chatForm.onsubmit = (e) => {
+  e.preventDefault();
+  const text = els.chatInput.value.trim();
+  if (!text) return;
+  socket.emit('sendChatMessage', text);
+  els.chatInput.value = '';
+};
+
+socket.on('chatHistory', (messages) => {
+  els.chatMessages.innerHTML = '';
+  messages.forEach(appendChatMessage);
+});
+
+socket.on('chatMessage', (message) => {
+  appendChatMessage(message);
+  if (!chatOpen) setChatUnread(chatUnread + 1);
+});

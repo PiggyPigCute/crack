@@ -36,8 +36,18 @@ let game = {
 const roles = new Map();
 const spectators = new Map(); // socket.id -> { name }, for connexions not (yet) attached to a player slot
 
+const chatHistory = [];
+const chatHistoryLimit = 100;
+
 function randomName() {
   return names[Math.floor(Math.random() * names.length)];
+}
+
+function nameForSocket(socketId) {
+  const role = roles.get(socketId);
+  if (role >= 0) return game.players[role] ? game.players[role].name : null;
+  const spectator = spectators.get(socketId);
+  return spectator ? spectator.name : null;
 }
 
 function viewFor(socketId, role) {
@@ -115,6 +125,22 @@ io.on('connection', (socket) => {
 
   // Envoie l'état initial (filtré) juste à ce client
   spreadState();
+  socket.emit('chatHistory', chatHistory);
+
+  socket.on('sendChatMessage', (text) => {
+    if (typeof text != 'string') return;
+    text = text.trim().slice(0, 300);
+    if (!text) return;
+
+    const name = nameForSocket(socket.id);
+    if (!name) return;
+
+    const message = { name, text, time: Date.now() };
+    chatHistory.push(message);
+    if (chatHistory.length > chatHistoryLimit) chatHistory.shift();
+
+    io.emit('chatMessage', message);
+  });
 
   socket.on('joinGame', () => {
     const role = roles.get(socket.id);

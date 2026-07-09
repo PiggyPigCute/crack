@@ -70,6 +70,22 @@
     <div id="reveal-river"></div>
   </div>
 
+  <div id="chat">
+    <button id="chat-toggle" type="button">
+      Chat
+      <span id="chat-badge" class="hidden">0</span>
+    </button>
+
+    <div id="chat-panel" class="hidden">
+      <div id="chat-messages"></div>
+
+      <form id="chat-form">
+        <input type="text" id="chat-input" placeholder="Message..." maxlength="300" autocomplete="off">
+        <button type="submit">Envoyer</button>
+      </form>
+    </div>
+  </div>
+
   <script src="/socket.io/socket.io.js"></script>
   <script src="script.js" defer></script>
 </body>
