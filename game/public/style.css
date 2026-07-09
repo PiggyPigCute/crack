@@ -313,6 +313,7 @@ button:disabled {
 
 #river {
     display: flex;
+    align-items: center;
     justify-content: center;
     gap: 10px;
     padding: 14px;
@@ -325,12 +326,16 @@ button:disabled {
     perspective: 700px;
 }
 
+#river-slots {
+    display: flex;
+    gap: 10px;
+}
+
 .river-deck {
     position: relative;
     width: clamp(40px, 14vw, 60px);
     height: clamp(58px, 20vw, 86px);
     flex-shrink: 0;
-    margin-right: 4px;
 }
 
 .river-deck::before,
@@ -925,6 +930,10 @@ button:disabled {
         gap: 4px;
         padding: 8px;
         margin-bottom: 15px;
+    }
+
+    #river-slots {
+        gap: 4px;
     }
 
     #reveal {

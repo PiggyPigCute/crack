@@ -17,7 +17,8 @@ els = {
   opponentsRow: document.getElementById('opponents-row'),
   centerTokens: document.getElementById('center-tokens'),
   nextTurnContainer: document.getElementById('next-turn-container'),
-  river: document.getElementById('river'),
+  riverDeck: document.getElementById('river-deck'),
+  riverSlots: document.getElementById('river-slots'),
   reveal: document.getElementById('reveal'),
   revealLobbyContainer: document.getElementById('reveal-lobby-container'),
   revealBlocks: document.getElementById('reveal-blocks'),
@@ -325,18 +326,7 @@ function createRecordedTokenEl(entry) {
 const riverSize = 5;
 const riverRevealCounts = new WeakMap(); // container -> number of cards shown last render, to spot newly-revealed ones
 
-function createRiverDeckEl() {
-  const deckEl = document.createElement('div');
-  deckEl.className = 'river-deck';
-
-  const faceEl = document.createElement('div');
-  faceEl.className = 'river-deck-face';
-  deckEl.appendChild(faceEl);
-
-  return deckEl;
-}
-
-// slides (and lightly flips) a freshly-revealed card in from the deck's position to its slot
+// slides (and lightly flips) a freshly-dealt/revealed card in from the deck's position to its slot
 function animateCardFromDeck(cardEl, deckRect) {
   const targetRect = cardEl.getBoundingClientRect();
   const dx = deckRect.left - targetRect.left;
@@ -351,16 +341,12 @@ function animateCardFromDeck(cardEl, deckRect) {
   cardEl.style.opacity = '';
 }
 
-function renderRiver(container, river, withDeck = false) {
+// `deckEl`, when given, is the source the newly-revealed cards animate in from
+function renderRiver(container, river, deckEl = null) {
   const previousCount = riverRevealCounts.get(container) || 0;
-  const deckEl = withDeck ? container.querySelector('.river-deck') : null;
   const deckRect = deckEl && river.length > previousCount ? deckEl.getBoundingClientRect() : null;
 
   container.innerHTML = '';
-
-  if (withDeck) {
-    container.appendChild(createRiverDeckEl());
-  }
 
   for (let i = 0; i < riverSize; i++) {
     if (river[i]) {
@@ -386,6 +372,11 @@ let handSlotEls = []; // handIndex -> persistent slot DOM element, valid while l
 
 function renderHands(hands, tokens, turn, river) {
   if (turn !== lastHandsTurn || handSlotEls.length !== hands.length) {
+    // a fresh deal only ever happens landing back on turn 0 (a genuine new game, not just
+    // the very first turn-advance rebuild), so that's when the cards animate in from the deck
+    const isNewDeal = turn === 0 && lastHandsTurn !== 0;
+    const deckRect = isNewDeal ? els.riverDeck.getBoundingClientRect() : null;
+
     els.myHands.innerHTML = '';
     handSlotEls = [];
 
@@ -412,7 +403,11 @@ function renderHands(hands, tokens, turn, river) {
 
       const cardsRow = document.createElement('div');
       cardsRow.className = 'hand-cards';
-      hand.forEach(card => cardsRow.appendChild(createCardEl(card)));
+      const cardEls = hand.map(card => {
+        const cardEl = createCardEl(card);
+        cardsRow.appendChild(cardEl);
+        return cardEl;
+      });
       handDiv.appendChild(cardsRow);
 
       const pokerText = document.createElement('div');
@@ -422,6 +417,9 @@ function renderHands(hands, tokens, turn, river) {
 
       groupDiv.appendChild(handDiv);
       els.myHands.appendChild(groupDiv);
+
+      // deal from the deck once the cards are actually laid out in the document
+      if (deckRect) cardEls.forEach(cardEl => animateCardFromDeck(cardEl, deckRect));
     });
 
     lastHandsTurn = turn;
@@ -825,7 +823,7 @@ socket.on('gameState', (view) => {
       renderOkButton(view.tokens, view.ready);
     }
 
-    renderRiver(els.river, view.river, true);
+    renderRiver(els.riverSlots, view.river, els.riverDeck);
   } else {
     els.lobby.classList.remove("hidden");
     els.game.classList.add("hidden");
