@@ -323,18 +323,58 @@ function createRecordedTokenEl(entry) {
 }
 
 const riverSize = 5;
+const riverRevealCounts = new WeakMap(); // container -> number of cards shown last render, to spot newly-revealed ones
 
-function renderRiver(container, river) {
+function createRiverDeckEl() {
+  const deckEl = document.createElement('div');
+  deckEl.className = 'river-deck';
+
+  const faceEl = document.createElement('div');
+  faceEl.className = 'river-deck-face';
+  deckEl.appendChild(faceEl);
+
+  return deckEl;
+}
+
+// slides (and lightly flips) a freshly-revealed card in from the deck's position to its slot
+function animateCardFromDeck(cardEl, deckRect) {
+  const targetRect = cardEl.getBoundingClientRect();
+  const dx = deckRect.left - targetRect.left;
+  const dy = deckRect.top - targetRect.top;
+
+  cardEl.style.transition = 'none';
+  cardEl.style.transform = `translate(${dx}px, ${dy}px) rotateY(90deg)`;
+  cardEl.style.opacity = '0';
+  cardEl.getBoundingClientRect(); // force reflow before re-enabling the transition
+  cardEl.style.transition = 'transform 0.45s ease, opacity 0.25s ease';
+  cardEl.style.transform = '';
+  cardEl.style.opacity = '';
+}
+
+function renderRiver(container, river, withDeck = false) {
+  const previousCount = riverRevealCounts.get(container) || 0;
+  const deckEl = withDeck ? container.querySelector('.river-deck') : null;
+  const deckRect = deckEl && river.length > previousCount ? deckEl.getBoundingClientRect() : null;
+
   container.innerHTML = '';
+
+  if (withDeck) {
+    container.appendChild(createRiverDeckEl());
+  }
+
   for (let i = 0; i < riverSize; i++) {
     if (river[i]) {
-      container.appendChild(createCardEl(river[i]));
+      const cardEl = createCardEl(river[i]);
+      container.appendChild(cardEl);
+      if (i >= previousCount && deckRect) animateCardFromDeck(cardEl, deckRect);
     } else {
       const emptySlot = document.createElement('div');
       emptySlot.className = 'card card-empty';
       container.appendChild(emptySlot);
     }
   }
+
+  riverRevealCounts.set(container, river.length);
 }
 
 // cards, recorded-token history and the poker readout only change when the turn advances
@@ -785,7 +825,7 @@ socket.on('gameState', (view) => {
       renderOkButton(view.tokens, view.ready);
     }
 
-    renderRiver(els.river, view.river);
+    renderRiver(els.river, view.river, true);
   } else {
     els.lobby.classList.remove("hidden");
     els.game.classList.add("hidden");
