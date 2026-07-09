@@ -5,7 +5,7 @@ els = {
   lobby: document.getElementById('lobby'),
   game: document.getElementById('game'),
   playersList: document.getElementById('players-list'),
-  spectatorsTitle: document.getElementById('spectators-title'),
+  spectatorsSection: document.getElementById('spectators-section'),
   spectatorsList: document.getElementById('spectators-list'),
   btnJoinGame: document.getElementById('btn-join-game'),
   btnBecomeSpectator: document.getElementById('btn-become-spectator'),
@@ -814,7 +814,7 @@ socket.on('gameState', (view) => {
     });
 
     // spectator list
-    els.spectatorsTitle.classList.toggle('hidden', view.spectators.length == 0);
+    els.spectatorsSection.classList.toggle('hidden', view.spectators.length == 0);
     els.spectatorsList.innerHTML = '';
     view.spectators.forEach(spectator => {
       renderNameRow(els.spectatorsList, spectator.name, spectator.isSelf);
