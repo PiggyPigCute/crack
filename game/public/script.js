@@ -23,6 +23,7 @@ els = {
   revealLobbyContainer: document.getElementById('reveal-lobby-container'),
   revealBlocks: document.getElementById('reveal-blocks'),
   revealRiver: document.getElementById('reveal-river'),
+  chat: document.getElementById('chat'),
   chatToggle: document.getElementById('chat-toggle'),
   chatBadge: document.getElementById('chat-badge'),
   chatPreview: document.getElementById('chat-preview'),
@@ -1024,16 +1025,29 @@ function showChatPreview(message) {
   }, chatPreviewVisibleMs);
 }
 
+function openChat() {
+  chatOpen = true;
+  els.chatPanel.classList.remove('hidden');
+  setChatUnread(0);
+  clearChatPreview();
+  els.chatMessages.scrollTop = els.chatMessages.scrollHeight;
+  els.chatInput.focus();
+}
+
+function closeChat() {
+  chatOpen = false;
+  els.chatPanel.classList.add('hidden');
+}
+
 els.chatToggle.onclick = () => {
-  chatOpen = !chatOpen;
-  els.chatPanel.classList.toggle('hidden', !chatOpen);
-  if (chatOpen) {
-    setChatUnread(0);
-    clearChatPreview();
-    els.chatMessages.scrollTop = els.chatMessages.scrollHeight;
-    els.chatInput.focus();
-  }
+  if (chatOpen) closeChat();
+  else openChat();
 };
+
+// clicking anywhere outside the chat widget closes it while it's open
+document.addEventListener('click', (e) => {
+  if (chatOpen && !els.chat.contains(e.target)) closeChat();
+});
 
 els.chatForm.onsubmit = (e) => {
   e.preventDefault();
