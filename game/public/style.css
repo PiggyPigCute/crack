@@ -954,3 +954,88 @@ button:disabled {
         padding: 8px;
     }
 }
+
+/* ---------- Large screens: the clamp()s above already sit at their max past ~700px,
+   so window size stops mattering — bump the in-game content up a notch here instead
+   of relying on browser zoom ---------- */
+
+@media (min-width: 701px) {
+    .card {
+        width: 72px;
+        height: 104px;
+        font-size: 24px;
+    }
+
+    .card .card-suit {
+        font-size: 26px;
+    }
+
+    .river-deck {
+        width: 72px;
+        height: 104px;
+    }
+
+    .joker-star {
+        width: 52px;
+        height: 52px;
+    }
+
+    .token,
+    .token-slot {
+        width: 52px;
+        height: 52px;
+    }
+
+    .token {
+        font-size: 19px;
+    }
+
+    .token-slot.hand-token-slot {
+        min-height: 96px;
+        padding: 12px;
+    }
+
+    .token-recorded {
+        width: 32px;
+        height: 32px;
+        font-size: 13px;
+    }
+
+    .token-recorded.shape-square {
+        width: 24px;
+        height: 24px;
+    }
+
+    .opponent-name,
+    .disconnected-opponent-name,
+    .ready-check,
+    .reveal-name {
+        font-size: 15px;
+    }
+
+    .poker {
+        font-size: 14px;
+    }
+
+    .hand {
+        padding: 16px;
+        gap: 10px;
+    }
+
+    .hand-cards {
+        gap: 12px;
+    }
+
+    #my-hands {
+        gap: 40px;
+    }
+
+    #river {
+        padding: 16px;
+        gap: 12px;
+    }
+
+    #river-slots {
+        gap: 12px;
+    }
+}
