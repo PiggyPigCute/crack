@@ -681,6 +681,24 @@ function renderOpponents(players, tokens, disconnectedPlayers, ready, turn) {
 // instead of the whole screen being torn down and rebuilt on every reveal step
 let revealState = null; // { revealedCount, metas: [{ blockDiv, pokerEl, flipEls }] }
 
+// a hand can only be flagged "misranked" against a neighbour that is itself revealed —
+// comparing against a still-hidden hand would leak its relative strength as a spoiler.
+// the "previous" comparison is always safe once this block is revealed (hands reveal in
+// order, so the previous one is necessarily already shown); the "next" comparison needs
+// that specific neighbour to also be revealed yet.
+function computeIsMisranked(blocks, index, revealedCount) {
+  if (index >= revealedCount) return false;
+
+  const block = blocks[index];
+  const previousBlock = blocks[index - 1];
+  const nextBlock = blocks[index + 1];
+
+  const worseThanPrevious = previousBlock && comparePokers(block.poker, previousBlock.poker) == 2;
+  const betterThanNext = nextBlock && index + 1 < revealedCount && comparePokers(block.poker, nextBlock.poker) == 1;
+
+  return !!(worseThanPrevious || betterThanNext);
+}
+
 // third screen, after 'lobby' and 'game': every hand revealed, sorted by its turn-4 (circle) token
 function renderReveal(view) {
   const lastTurn = shapeClasses.length - 1; // circle
@@ -712,6 +730,14 @@ function renderReveal(view) {
         meta.blockDiv.classList.remove('reveal-block-hidden');
         meta.flipEls.forEach(flipEl => flipEl.classList.add('is-flipped'));
         meta.pokerEl.innerHTML = displayPoker(blocks[index].poker);
+        meta.finalTokenWrap.classList.toggle('reveal-final-token-error', computeIsMisranked(blocks, index, view.revealedCount));
+
+        // the previous hand's "misranked vs. next" comparison only becomes decidable
+        // now that this one is revealed too, so re-check it as well
+        const previousMeta = revealState.metas[index - 1];
+        if (previousMeta) {
+          previousMeta.finalTokenWrap.classList.toggle('reveal-final-token-error', computeIsMisranked(blocks, index - 1, view.revealedCount));
+        }
       }
       revealState.revealedCount = view.revealedCount;
     }
@@ -724,11 +750,7 @@ function renderReveal(view) {
 
   blocks.forEach((block, index) => {
     const isRevealed = index < view.revealedCount;
-
-    const previousBlock = blocks[index - 1];
-    const nextBlock = blocks[index + 1];
-    const isMisranked = (previousBlock && comparePokers(block.poker, previousBlock.poker) == 2)
-      || (nextBlock && comparePokers(block.poker, nextBlock.poker) == 1);
+    const isMisranked = computeIsMisranked(blocks, index, view.revealedCount);
 
     const blockDiv = document.createElement('div');
     blockDiv.className = 'reveal-block' + (isRevealed ? '' : ' reveal-block-hidden');
@@ -774,7 +796,7 @@ function renderReveal(view) {
 
     els.revealBlocks.appendChild(blockDiv);
 
-    metas.push({ blockDiv, pokerEl, flipEls });
+    metas.push({ blockDiv, pokerEl, flipEls, finalTokenWrap });
   });
 
   revealState = { revealedCount: view.revealedCount, metas };
