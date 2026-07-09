@@ -1098,7 +1098,7 @@ document.addEventListener('keydown', (e) => {
     return;
   }
 
-  if (e.code === 'Space' || e.code === 'Enter') {
+  if (e.code === 'Space' || e.code === 'Enter' || e.code === 'NumpadEnter') {
     e.preventDefault();
     if (!els.lobby.classList.contains('hidden')) {
       if (myRole < 0) socket.emit('joinGame');
