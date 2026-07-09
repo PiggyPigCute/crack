@@ -994,9 +994,9 @@ function setChatUnread(count) {
   els.chatBadge.classList.toggle('hidden', chatUnread === 0);
 }
 
-const chatPreviewMax = 5; // Minecraft-style feed: a handful of recent messages, each fading on its own
-const chatPreviewVisibleMs = 6000;
-const chatPreviewFadeMs = 1000;
+const chatPreviewMax = 5;
+const chatPreviewVisibleMs = 1500;
+const chatPreviewFadeMs = 500;
 
 function clearChatPreview() {
   els.chatPreview.innerHTML = '';
