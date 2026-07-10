@@ -440,6 +440,10 @@ io.on('connection', (socket) => {
       }
     }
 
+    if (roles.size === 0) {
+      chatHistory.length = 0;
+    }
+
     console.log(`Déconnexion ${socket.id} (${r})`);
     spreadState();
   });
