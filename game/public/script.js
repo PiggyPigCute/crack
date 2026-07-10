@@ -677,6 +677,12 @@ function renderOpponents(players, tokens, disconnectedPlayers, ready, turn) {
   });
 }
 
+function playSound(name) {
+  // .play() rejects if called without a prior user gesture (autoplay policy); by the time
+  // this fires (a click on "Révéler") that's already satisfied, but ignore it regardless
+  new Audio(`sounds/${name}.mp3`).play().catch(() => {});
+}
+
 // persisted across renderReveal calls so that a newly-revealed hand can flip in place
 // instead of the whole screen being torn down and rebuilt on every reveal step
 let revealState = null; // { revealedCount, metas: [{ blockDiv, pokerEl, flipEls }] }
@@ -724,22 +730,39 @@ function renderReveal(view) {
 
   if (!isFreshReveal) {
     if (view.revealedCount > revealState.revealedCount) {
+      let causedNewMismatch = false;
+
       // flip just the hands that newly became revealed since the last render
       for (let index = revealState.revealedCount; index < view.revealedCount; index++) {
         const meta = revealState.metas[index];
         meta.blockDiv.classList.remove('reveal-block-hidden');
         meta.flipEls.forEach(flipEl => flipEl.classList.add('is-flipped'));
         meta.pokerEl.innerHTML = displayPoker(blocks[index].poker);
-        meta.finalTokenWrap.classList.toggle('reveal-final-token-error', computeIsMisranked(blocks, index, view.revealedCount));
+
+        const isMisranked = computeIsMisranked(blocks, index, view.revealedCount);
+        meta.finalTokenWrap.classList.toggle('reveal-final-token-error', isMisranked);
+        if (isMisranked) causedNewMismatch = true; // this hand was never shown before, so its status is inherently new
 
         // the previous hand's "misranked vs. next" comparison only becomes decidable
         // now that this one is revealed too, so re-check it as well
         const previousMeta = revealState.metas[index - 1];
         if (previousMeta) {
-          previousMeta.finalTokenWrap.classList.toggle('reveal-final-token-error', computeIsMisranked(blocks, index - 1, view.revealedCount));
+          const wasMisranked = previousMeta.finalTokenWrap.classList.contains('reveal-final-token-error');
+          const nowMisranked = computeIsMisranked(blocks, index - 1, view.revealedCount);
+          previousMeta.finalTokenWrap.classList.toggle('reveal-final-token-error', nowMisranked);
+          if (nowMisranked && !wasMisranked) causedNewMismatch = true;
         }
       }
+
       revealState.revealedCount = view.revealedCount;
+
+      if (causedNewMismatch) {
+        playSound('fail');
+      } else if (view.revealedCount >= blocks.length) {
+        playSound('good-end');
+      } else {
+        playSound('good');
+      }
     }
     renderRiver(els.revealRiver, view.river);
     return;
