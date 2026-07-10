@@ -1258,7 +1258,7 @@ document.addEventListener('keydown', (e) => {
         key: settingsKeyboardShortcuts[e.code[3]],
         offset: e.shiftKey ? -1 : 1
       })
-    } else if (/Arrow(Up|Down)/.test(e.code)) {
+    } else if (/Arrow(Lef|Righ)t/.test(e.code)) {
       socket.emit('changeAvatar', e.code.length==9 ? -1 : 1)
     }
   }
