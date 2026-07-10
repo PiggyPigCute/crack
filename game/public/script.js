@@ -924,8 +924,9 @@ function renderMyIdentity(player) {
   els.myIdentity.innerHTML = '';
   if (myRole < 0 || !player) return; // spectators have no hand of their own to sit below
 
+  els.myIdentity.appendChild(document.createTextNode('Vous êtes '));
   els.myIdentity.appendChild(createAvatarEl(player.avatar));
-  els.myIdentity.appendChild(document.createTextNode('Vous êtes ' + player.name));
+  els.myIdentity.appendChild(document.createTextNode(player.name));
 }
 
 function renderOkButton(tokens, ready) {
