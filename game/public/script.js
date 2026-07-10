@@ -694,7 +694,7 @@ function renderOpponents(players, tokens, disconnectedPlayers, ready, turn) {
   });
 }
 
-const soundVolume = 0.35; // the raw recordings/SFX are all much louder than is comfortable
+const soundVolume = 0.2; // the raw recordings/SFX are all much louder than is comfortable
 
 function playSound(name) {
   const audio = new Audio(`sounds/${name}.mp3`);
