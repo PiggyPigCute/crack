@@ -379,7 +379,8 @@ function animateCardFromDeck(cardEl, deckRect) {
 // `deckEl`, when given, is the source the newly-revealed cards animate in from
 function renderRiver(container, river, deckEl = null) {
   const previousCount = riverRevealCounts.get(container) || 0;
-  const deckRect = deckEl && river.length > previousCount ? deckEl.getBoundingClientRect() : null;
+  const hasNewCards = river.length > previousCount;
+  const deckRect = deckEl && hasNewCards ? deckEl.getBoundingClientRect() : null;
 
   container.innerHTML = '';
 
@@ -396,6 +397,10 @@ function renderRiver(container, river, deckEl = null) {
   }
 
   riverRevealCounts.set(container, river.length);
+
+  // deckEl is only passed for the live game's river (not the reveal screen), and a new
+  // turn is exactly when more river cards get revealed
+  if (deckEl && hasNewCards) playSound('newTurn');
 }
 
 // cards, recorded-token history and the poker readout only change when the turn advances
