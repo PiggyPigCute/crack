@@ -1251,11 +1251,15 @@ document.addEventListener('keydown', (e) => {
     return;
   }
 
-  if (/Key[CMHJ]/.test(e.code) && myRole == 0 && !els.lobby.classList.contains('hidden')) {
-    e.preventDefault();
-    socket.emit('updateSetting', {
-      key: settingsKeyboardShortcuts[e.code[3]],
-      offset: e.shiftKey ? -1 : 1
-    })
+  if (!els.lobby.classList.contains('hidden')) {
+    if (/Key[CMHJ]/.test(e.code) && myRole == 0) {
+      e.preventDefault();
+      socket.emit('updateSetting', {
+        key: settingsKeyboardShortcuts[e.code[3]],
+        offset: e.shiftKey ? -1 : 1
+      })
+    } else if (/Arrow(Up|Down)/.test(e.code)) {
+      socket.emit('changeAvatar', e.code.length==9 ? -1 : 1)
+    }
   }
 });
