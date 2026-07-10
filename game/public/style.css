@@ -247,6 +247,14 @@ button:disabled {
     background: #f5efe0;
 }
 
+.avatar {
+    height: 1.3em;
+    width: auto;
+    vertical-align: middle;
+    margin-right: 4px;
+    flex-shrink: 0;
+}
+
 #players-list .player-tag,
 #spectators-list .player-tag {
     display: flex;

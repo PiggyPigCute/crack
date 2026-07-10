@@ -43,6 +43,20 @@ function randomName() {
   return names[Math.floor(Math.random() * names.length)];
 }
 
+const avatars = ['bot', 'cow', 'pig', 'quack'];
+
+// picks an avatar unused by anyone currently connected (player or spectator), falling
+// back to any avatar (duplicates allowed) once there are more people than avatars
+function randomAvatar() {
+  const used = new Set();
+  game.players.forEach(p => used.add(p.avatar));
+  spectators.forEach(s => used.add(s.avatar));
+
+  const available = avatars.filter(a => !used.has(a));
+  const pool = available.length > 0 ? available : avatars;
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
 function nameForSocket(socketId) {
   const role = roles.get(socketId);
   if (role >= 0) return game.players[role] ? game.players[role].name : null;
@@ -70,7 +84,7 @@ function viewFor(socketId, role) {
       inGame: false,
       players: game.players,
       disconnectedPlayers: game.disconnectedPlayers,
-      spectators: [...spectators.entries()].map(([id, s]) => ({ name: s.name, isSelf: id == socketId })),
+      spectators: [...spectators.entries()].map(([id, s]) => ({ name: s.name, avatar: s.avatar, isSelf: id == socketId })),
       settings: game.settings
     }
   }
@@ -118,7 +132,7 @@ io.on('connection', (socket) => {
 
   roles.set(socket.id, role);
   if (role == -1) {
-    spectators.set(socket.id, { name: randomName() });
+    spectators.set(socket.id, { name: randomName(), avatar: randomAvatar() });
   }
   socket.emit('role', role);
   console.log(`Connexion ${socket.id} -> ${role}`);
@@ -150,7 +164,8 @@ io.on('connection', (socket) => {
     const spectator = spectators.get(socket.id);
     const newRole = game.players.length;
     game.players.push({
-      name: spectator ? spectator.name : randomName()
+      name: spectator ? spectator.name : randomName(),
+      avatar: spectator ? spectator.avatar : randomAvatar()
     });
     spectators.delete(socket.id);
     roles.set(socket.id, newRole);
@@ -337,7 +352,7 @@ io.on('connection', (socket) => {
     game.players.splice(role, 1);
     for (const [socketId, otherRole] of roles.entries()) {
       if (otherRole == role) {
-        spectators.set(socketId, { name: removedPlayer.name });
+        spectators.set(socketId, { name: removedPlayer.name, avatar: removedPlayer.avatar });
         roles.set(socketId, -1);
         io.to(socketId).emit('role', -1);
       } else if (otherRole > role) {
@@ -362,7 +377,7 @@ io.on('connection', (socket) => {
     for (const [socketId, r] of roles.entries()) {
       if (r < 0) continue; // already a spectator
       const player = game.players[r];
-      if (player) spectators.set(socketId, { name: player.name });
+      if (player) spectators.set(socketId, { name: player.name, avatar: player.avatar });
       roles.set(socketId, -1);
       io.to(socketId).emit('role', -1);
     }

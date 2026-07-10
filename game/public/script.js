@@ -283,6 +283,14 @@ function displayPoker(poker) {
   }
 }
 
+function createAvatarEl(avatar) {
+  const img = document.createElement('img');
+  img.className = 'avatar';
+  img.src = `imgs/animals/${avatar}.svg`;
+  img.alt = '';
+  return img;
+}
+
 
 function createCardEl(card) {
   const cardDiv = document.createElement('div');
@@ -629,6 +637,7 @@ function renderOpponents(players, tokens, disconnectedPlayers, ready, turn) {
 
     const nameRow = document.createElement('div');
     nameRow.className = 'opponent-name-row';
+    nameRow.appendChild(createAvatarEl(player.avatar));
 
     const nameEl = document.createElement('span');
     if (disconnectedPlayers.includes(playerIndex)) {
@@ -791,7 +800,8 @@ function renderReveal(view) {
 
     const nameEl = document.createElement('div');
     nameEl.className = 'reveal-name';
-    nameEl.textContent = block.player.name;
+    nameEl.appendChild(createAvatarEl(block.player.avatar));
+    nameEl.appendChild(document.createTextNode(block.player.name));
     infoDiv.appendChild(nameEl);
 
     const historyEl = document.createElement('div');
@@ -979,9 +989,10 @@ socket.on('gameState', (view) => {
     // player list
     els.playersList.innerHTML = '';
 
-    const renderNameRow = (container, name, isSelf) => {
+    const renderNameRow = (container, avatar, name, isSelf) => {
       const div = document.createElement('div');
       div.className = 'player-tag';
+      div.appendChild(createAvatarEl(avatar));
 
       const nameSpan = document.createElement('span');
       nameSpan.innerHTML = name + (isSelf ? ' <strong>(Vous)</strong>' : '');
@@ -991,11 +1002,11 @@ socket.on('gameState', (view) => {
     };
 
     if (!isSpectator) {
-      renderNameRow(els.playersList, view.players[myRole].name, true);
+      renderNameRow(els.playersList, view.players[myRole].avatar, view.players[myRole].name, true);
     }
     view.players.forEach((player, playerRole) => {
       if (playerRole != myRole) {
-        renderNameRow(els.playersList, player.name, false);
+        renderNameRow(els.playersList, player.avatar, player.name, false);
       }
     });
 
@@ -1003,7 +1014,7 @@ socket.on('gameState', (view) => {
     els.spectatorsSection.classList.toggle('hidden', view.spectators.length == 0);
     els.spectatorsList.innerHTML = '';
     view.spectators.forEach(spectator => {
-      renderNameRow(els.spectatorsList, spectator.name, spectator.isSelf);
+      renderNameRow(els.spectatorsList, spectator.avatar, spectator.name, spectator.isSelf);
     });
 
     // "Votre nom actuel est "
