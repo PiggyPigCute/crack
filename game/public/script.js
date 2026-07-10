@@ -782,10 +782,11 @@ function renderReveal(view) {
       }
 
       revealState.revealedCount = view.revealedCount;
+      revealState.hadMismatch = revealState.hadMismatch || causedNewMismatch;
 
       if (causedNewMismatch) {
         playSound('fail');
-      } else if (view.revealedCount >= blocks.length) {
+      } else if (view.revealedCount >= blocks.length && !revealState.hadMismatch) {
         playSound('good-end');
       } else {
         playSound('good');
@@ -798,9 +799,12 @@ function renderReveal(view) {
   els.revealBlocks.innerHTML = '';
   const metas = [];
 
+  let hadMismatch = false;
+
   blocks.forEach((block, index) => {
     const isRevealed = index < view.revealedCount;
     const isMisranked = computeIsMisranked(blocks, index, view.revealedCount);
+    if (isMisranked) hadMismatch = true;
 
     const blockDiv = document.createElement('div');
     blockDiv.className = 'reveal-block' + (isRevealed ? '' : ' reveal-block-hidden');
@@ -850,7 +854,7 @@ function renderReveal(view) {
     metas.push({ blockDiv, pokerEl, flipEls, finalTokenWrap });
   });
 
-  revealState = { revealedCount: view.revealedCount, metas };
+  revealState = { revealedCount: view.revealedCount, metas, hadMismatch };
 
   renderRiver(els.revealRiver, view.river);
 }
