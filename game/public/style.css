@@ -125,15 +125,8 @@ h2, h3 {
     color: var(--ink-soft);
 }
 
-.name-form {
-    margin-top: auto;
-    display: flex;
-    gap: 8px;
-    width: 100%;
-    justify-content: center;
-}
-
 .avatar-picker {
+    margin-top: auto;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -149,6 +142,13 @@ h2, h3 {
 .avatar-picker-img {
     height: 48px;
     width: 48px;
+}
+
+.name-form {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+    justify-content: center;
 }
 
 #input-name {
