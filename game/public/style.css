@@ -320,6 +320,20 @@ button:disabled {
     display: none;
 }
 
+#my-identity {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-size: 13px;
+    font-weight: bold;
+    color: var(--ink-soft);
+}
+
+#my-identity:empty {
+    display: none;
+}
+
 #my-hands {
     display: flex;
     align-items: flex-end;

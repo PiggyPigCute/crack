@@ -17,6 +17,7 @@ els = {
   inputName: document.getElementById('input-name'),
   settingsPanel: document.getElementById('settings-panel'),
   myHands: document.getElementById('my-hands'),
+  myIdentity: document.getElementById('my-identity'),
   opponentsRow: document.getElementById('opponents-row'),
   centerTokens: document.getElementById('center-tokens'),
   nextTurnContainer: document.getElementById('next-turn-container'),
@@ -919,6 +920,14 @@ function renderSettingsPanel(settings, isAdmin) {
   }
 }
 
+function renderMyIdentity(player) {
+  els.myIdentity.innerHTML = '';
+  if (myRole < 0 || !player) return; // spectators have no hand of their own to sit below
+
+  els.myIdentity.appendChild(createAvatarEl(player.avatar));
+  els.myIdentity.appendChild(document.createTextNode('Vous êtes ' + player.name));
+}
+
 function renderOkButton(tokens, ready) {
   els.nextTurnContainer.innerHTML = '';
   if (myRole < 0) return; // spectators don't play
@@ -980,6 +989,8 @@ socket.on('gameState', (view) => {
   if (view.inGame) {
     els.game.classList.remove("hidden");
     els.lobby.classList.add("hidden");
+
+    renderMyIdentity(view.players[myRole]);
 
     if (view.tokens) {
       currentTokens = view.tokens;
