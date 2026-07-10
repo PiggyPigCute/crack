@@ -11,6 +11,9 @@ els = {
   btnBecomeSpectator: document.getElementById('btn-become-spectator'),
   btnChangeName: document.getElementById('btn-change-name'),
   nameFormBottom: document.getElementById('name-form-bottom'),
+  avatarPickerImg: document.getElementById('avatar-picker-img'),
+  btnAvatarPrev: document.getElementById('btn-avatar-prev'),
+  btnAvatarNext: document.getElementById('btn-avatar-next'),
   inputName: document.getElementById('input-name'),
   settingsPanel: document.getElementById('settings-panel'),
   myHands: document.getElementById('my-hands'),
@@ -1017,11 +1020,12 @@ socket.on('gameState', (view) => {
       renderNameRow(els.spectatorsList, spectator.avatar, spectator.name, spectator.isSelf);
     });
 
-    // "Votre nom actuel est "
-    const myName = isSpectator
-      ? (view.spectators.find(s => s.isSelf) || {}).name
-      : view.players[myRole].name;
-    els.nameFormBottom.innerHTML = 'Votre nom actuel est ' + myName;
+    // "Votre nom actuel est " + avatar picker preview
+    const myIdentity = isSpectator
+      ? (view.spectators.find(s => s.isSelf) || {})
+      : view.players[myRole];
+    els.nameFormBottom.innerHTML = 'Votre nom actuel est ' + myIdentity.name;
+    els.avatarPickerImg.src = `imgs/animals/${myIdentity.avatar}.svg`;
   }
 });
 
@@ -1037,6 +1041,9 @@ els.inputName.onkeydown = (e) => {
 
 els.btnJoinGame.onclick = () => socket.emit('joinGame');
 els.btnBecomeSpectator.onclick = () => socket.emit('makeSpectator');
+
+els.btnAvatarPrev.onclick = () => socket.emit('changeAvatar', -1);
+els.btnAvatarNext.onclick = () => socket.emit('changeAvatar', 1);
 
 // ---------- Chat ----------
 

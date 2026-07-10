@@ -11,6 +11,8 @@ const cardSuits = ['♠', '♥', '♦', '♣'];
 const joker = '★'
 const deskSize = 52
 
+const avatars = ['bot', 'cow', 'pig', 'quack'];
+
 const names = ['Adam', 'Adrien', 'Albert', 'Alexandre', 'Antoine', 'Arthur', 'Augustin', 'Aurélien', 'Baptiste', 'Benoît', 'Cédric', 'Claude', 'Charles', 'Denis', 'Émile', 'Émilien', 'François', 'Gabriel', 'Gauthier', 'Georges', 'Guillaume', 'Gustave', 'Henri', 'Hugo', 'Jean', 'Jérémie', 'Julien', 'Jules', 'Laurent', 'Léon', 'Louis', 'Lucas', 'Matthieu', 'Maxime', 'Nicolas', 'Olivier', 'Patrick', 'Paul', 'Pierre', 'Quentin', 'Raphaël', 'Sébastien', 'Simon', 'Stéphane', 'Théo', 'Thibault', 'Thimothée', 'Thomas', 'Valentin', 'Vivien', 'Adèle', 'Agathe', 'Alexia', 'Alice', 'Aliénor', 'Amélie', 'Anne', 'Ariane', 'Aude', 'Aurélie', 'Bérangère', 'Camille', 'Candice', 'Capucine', 'Caroline', 'Charlotte', 'Chloé', 'Doriane', 'Dorothée', 'Élisabeth', 'Émilie', 'Emma', 'Estelle', 'Faustine', 'Hélène', 'Jade', 'Jeanne', 'Julie', 'Juliette', 'Laure', 'Laura', 'Léa', 'Louise', 'Lucie', 'Margaux', 'Margueritte', 'Marianne', 'Marine', 'Mathilde', 'Marie', 'Maud', 'Morgane', 'Murielle', 'Myriam', 'Pauline', 'Romane', 'Roxane', 'Salomé', 'Valérie', 'Victoire']
 
 const defaultSettings = {
@@ -42,8 +44,6 @@ const chatHistoryLimit = 100;
 function randomName() {
   return names[Math.floor(Math.random() * names.length)];
 }
-
-const avatars = ['bot', 'cow', 'pig', 'quack'];
 
 // picks an avatar unused by anyone currently connected (player or spectator), falling
 // back to any avatar (duplicates allowed) once there are more people than avatars
@@ -185,6 +185,33 @@ io.on('connection', (socket) => {
     }
     spreadState()
   })
+
+  socket.on('changeAvatar', (direction) => {
+    if (direction != 1 && direction != -1) return;
+
+    const identity = identityForSocket(socket.id);
+    if (!identity) return;
+
+    const usedByOthers = new Set();
+    for (const [socketId, r] of roles.entries()) {
+      if (socketId === socket.id) continue;
+      const other = r >= 0 ? game.players[r] : spectators.get(socketId);
+      if (other) usedByOthers.add(other.avatar);
+    }
+
+    // step around the list looking for a free avatar; if every other one is taken
+    // (more people connected than avatars), just stay put
+    const currentIndex = avatars.indexOf(identity.avatar);
+    for (let step = 1; step <= avatars.length; step++) {
+      const index = ((currentIndex + direction * step) % avatars.length + avatars.length) % avatars.length;
+      if (!usedByOthers.has(avatars[index])) {
+        identity.avatar = avatars[index];
+        break;
+      }
+    }
+
+    spreadState();
+  });
 
   socket.on('updateSetting', ({ key, offset } = {}) => {
     const role = roles.get(socket.id);

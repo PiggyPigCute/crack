@@ -133,6 +133,24 @@ h2, h3 {
     justify-content: center;
 }
 
+.avatar-picker {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.avatar-picker button {
+    margin-top: 0;
+    padding: 4px 10px;
+    line-height: 1;
+    font-size: 16px;
+}
+
+.avatar-picker-img {
+    height: 48px;
+    width: 48px;
+}
+
 #input-name {
     flex: 1;
     max-width: 220px;
