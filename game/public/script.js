@@ -700,6 +700,10 @@ function playSound(name) {
   new Audio(`sounds/${name}.mp3`).play().catch(() => {});
 }
 
+function playAnimalSound(avatar) {
+  new Audio(`sounds/animals/${avatar}.mp3`).play().catch(() => {});
+}
+
 // persisted across renderReveal calls so that a newly-revealed hand can flip in place
 // instead of the whole screen being torn down and rebuilt on every reveal step
 let revealState = null; // { revealedCount, metas: [{ blockDiv, pokerEl, flipEls }] }
@@ -940,6 +944,10 @@ function renderRevealButton(isAdmin, revealedCount, totalHands) {
 
 socket.on('role', (role) => {
   myRole = role;
+});
+
+socket.on('tokenMoved', ({ avatar }) => {
+  playAnimalSound(avatar);
 });
 
 let currentTokens = null; // latest view.tokens, kept around for the keyboard shortcuts

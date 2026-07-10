@@ -336,6 +336,10 @@ io.on('connection', (socket) => {
 
     for (const p of touchedPlayers) game.ready[p] = false;
     spreadState();
+
+    // everyone hears the mover's animal, not just them
+    const mover = game.players[role];
+    if (mover) io.emit('tokenMoved', { avatar: mover.avatar });
   });
 
   socket.on('toggleReady', () => {
