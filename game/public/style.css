@@ -273,6 +273,16 @@ button:disabled {
     flex-shrink: 0;
 }
 
+@keyframes avatar-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.avatar-spin {
+    animation: avatar-spin 0.6s ease;
+}
+
 #players-list .player-tag,
 #spectators-list .player-tag {
     display: flex;

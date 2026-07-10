@@ -711,6 +711,18 @@ function playAnimalSound(avatar) {
   audio.play().catch(() => {});
 }
 
+// spins every currently-rendered avatar image matching this avatar (opponents, our own
+// "Vous êtes ...", the chat, ...) — queried fresh each time since these get rebuilt often
+function spinAvatarsFor(avatar) {
+  const suffix = `imgs/animals/${avatar}.svg`;
+  document.querySelectorAll('.avatar').forEach(img => {
+    if (!img.src.endsWith(suffix)) return;
+    img.classList.remove('avatar-spin');
+    void img.offsetWidth; // force reflow so the animation restarts even if it's already playing
+    img.classList.add('avatar-spin');
+  });
+}
+
 // persisted across renderReveal calls so that a newly-revealed hand can flip in place
 // instead of the whole screen being torn down and rebuilt on every reveal step
 let revealState = null; // { revealedCount, metas: [{ blockDiv, pokerEl, flipEls }] }
@@ -968,6 +980,7 @@ socket.on('role', (role) => {
 
 socket.on('tokenMoved', ({ avatar }) => {
   playAnimalSound(avatar);
+  spinAvatarsFor(avatar);
 });
 
 let currentTokens = null; // latest view.tokens, kept around for the keyboard shortcuts
