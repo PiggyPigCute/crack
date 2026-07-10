@@ -273,14 +273,24 @@ button:disabled {
     flex-shrink: 0;
 }
 
-@keyframes avatar-spin {
+@keyframes avatar-spin-cw {
     to {
         transform: rotate(360deg);
     }
 }
 
-.avatar-spin {
-    animation: avatar-spin 0.6s ease;
+@keyframes avatar-spin-ccw {
+    to {
+        transform: rotate(-360deg);
+    }
+}
+
+.avatar-spin-cw {
+    animation: avatar-spin-cw 0.6s ease;
+}
+
+.avatar-spin-ccw {
+    animation: avatar-spin-ccw 0.6s ease;
 }
 
 #players-list .player-tag,

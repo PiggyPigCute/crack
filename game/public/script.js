@@ -715,11 +715,13 @@ function playAnimalSound(avatar) {
 // "Vous êtes ...", the chat, ...) — queried fresh each time since these get rebuilt often
 function spinAvatarsFor(avatar) {
   const suffix = `imgs/animals/${avatar}.svg`;
+  const spinClass = Math.random() < 0.5 ? 'avatar-spin-cw' : 'avatar-spin-ccw';
+
   document.querySelectorAll('.avatar').forEach(img => {
     if (!img.src.endsWith(suffix)) return;
-    img.classList.remove('avatar-spin');
+    img.classList.remove('avatar-spin-cw', 'avatar-spin-ccw');
     void img.offsetWidth; // force reflow so the animation restarts even if it's already playing
-    img.classList.add('avatar-spin');
+    img.classList.add(spinClass);
   });
 }
 
