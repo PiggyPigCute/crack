@@ -694,14 +694,20 @@ function renderOpponents(players, tokens, disconnectedPlayers, ready, turn) {
   });
 }
 
+const soundVolume = 0.35; // the raw recordings/SFX are all much louder than is comfortable
+
 function playSound(name) {
+  const audio = new Audio(`sounds/${name}.mp3`);
+  audio.volume = soundVolume;
   // .play() rejects if called without a prior user gesture (autoplay policy); by the time
   // this fires (a click on "Révéler") that's already satisfied, but ignore it regardless
-  new Audio(`sounds/${name}.mp3`).play().catch(() => {});
+  audio.play().catch(() => {});
 }
 
 function playAnimalSound(avatar) {
-  new Audio(`sounds/animals/${avatar}.mp3`).play().catch(() => {});
+  const audio = new Audio(`sounds/animals/${avatar}.mp3`);
+  audio.volume = soundVolume;
+  audio.play().catch(() => {});
 }
 
 // persisted across renderReveal calls so that a newly-revealed hand can flip in place
