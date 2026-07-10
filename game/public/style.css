@@ -398,7 +398,6 @@ button:disabled {
 .opponent-name-row {
     display: flex;
     align-items: center;
-    gap: 5px;
 }
 
 .opponent-name {
@@ -899,6 +898,9 @@ button:disabled {
 }
 
 .chat-preview-message {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
     max-width: min(280px, 70vw);
     padding: 6px 10px;
     font-size: 13px;
@@ -909,6 +911,11 @@ button:disabled {
     border-radius: 10px;
     box-shadow: 0 4px 12px rgba(43, 38, 32, 0.18);
     backdrop-filter: blur(6px);
+    opacity: 1;
+    transition: opacity 1s ease;
+}
+
+.chat-preview-message .chat-message-body {
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 4;
@@ -918,8 +925,7 @@ button:disabled {
     max-height: 85px;
     overflow: hidden;
     text-overflow: ellipsis;
-    opacity: 1;
-    transition: opacity 1s ease;
+    min-width: 0;
 }
 
 .chat-preview-message.is-fading {
@@ -949,8 +955,15 @@ button:disabled {
 }
 
 .chat-message {
+    display: flex;
+    align-items: flex-start;
+    gap: 4px;
     font-size: 13px;
     line-height: 1.4;
+}
+
+.chat-message-body {
+    min-width: 0;
     word-break: break-word;
 }
 

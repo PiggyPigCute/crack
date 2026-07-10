@@ -57,11 +57,10 @@ function randomAvatar() {
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
-function nameForSocket(socketId) {
+function identityForSocket(socketId) {
   const role = roles.get(socketId);
-  if (role >= 0) return game.players[role] ? game.players[role].name : null;
-  const spectator = spectators.get(socketId);
-  return spectator ? spectator.name : null;
+  if (role >= 0) return game.players[role] || null;
+  return spectators.get(socketId) || null;
 }
 
 function viewFor(socketId, role) {
@@ -146,10 +145,10 @@ io.on('connection', (socket) => {
     text = text.trim().slice(0, 300);
     if (!text) return;
 
-    const name = nameForSocket(socket.id);
-    if (!name) return;
+    const identity = identityForSocket(socket.id);
+    if (!identity) return;
 
-    const message = { name, text, time: Date.now() };
+    const message = { name: identity.name, avatar: identity.avatar, text, time: Date.now() };
     chatHistory.push(message);
     if (chatHistory.length > chatHistoryLimit) chatHistory.shift();
 

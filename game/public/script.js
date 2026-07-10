@@ -1046,15 +1046,25 @@ let chatUnread = 0;
 // shared by the chat panel and the fading preview feed; textContent throughout,
 // never innerHTML, since message.name/message.text come from other users
 function fillChatMessageEl(container, message) {
+  container.appendChild(createAvatarEl(message.avatar));
+
+  // name + text live in their own wrapper (rather than directly in `container`) so that
+  // the chat-preview's line-clamp can apply to the text alone, without also clamping the
+  // avatar into the same box-orient flow
+  const bodyEl = document.createElement('span');
+  bodyEl.className = 'chat-message-body';
+
   const nameEl = document.createElement('span');
   nameEl.className = 'chat-message-name';
   nameEl.textContent = message.name + ' :';
-  container.appendChild(nameEl);
+  bodyEl.appendChild(nameEl);
 
   const textEl = document.createElement('span');
   textEl.className = 'chat-message-text';
   textEl.textContent = ' ' + message.text;
-  container.appendChild(textEl);
+  bodyEl.appendChild(textEl);
+
+  container.appendChild(bodyEl);
 }
 
 function appendChatMessage(message) {
