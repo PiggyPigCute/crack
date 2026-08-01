@@ -7,6 +7,16 @@ const server = http.createServer(app);
 const io = new Server(server);
 app.use(express.static('public'));
 
+// Dislog
+const guildId = 787077303242326056;
+const channelIds = {
+    main: 1533095033371230398,
+    minor: 1533095082046001222
+}
+function dislog(channel, msg) {
+    execFile('python3', ['~/dislog/.py', guildId, channelIds[channel], msg]);
+}
+
 const cardValues = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
 const cardSuits = ['♠', '♥', '♦', '♣'];
 const joker = '★'
@@ -173,7 +183,7 @@ io.on('connection', (socket) => {
 
     spreadState();
 
-    execFile('dislog-main', ["# Crack\nSomeone joined game"]);
+    dislog('main',"# Crack\nSomeone joined game");
   });
 
   socket.on('changeName', (newName) => {
